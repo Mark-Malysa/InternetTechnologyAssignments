@@ -1,0 +1,53 @@
+CS 352 Project 1 - Quick Capture Commands
+==========================================
+
+YOUR PORT: 30069
+
+=== CAPTURE 1: Loopback Traffic (Both on rlab5) ===
+
+# Method 1: tshark (Command Line)
+sudo tshark -i any -f "tcp port 30069" -w proj1_part1.pcap &
+python3 server.py &
+sleep 2
+python3 client.py
+
+# Method 2: Wireshark (GUI)
+# 1. Start Wireshark
+# 2. Select interface 'any'
+# 3. Filter: tcp port 30069
+# 4. Start capture
+# 5. Run programs
+# 6. Stop capture
+# 7. Save as proj1_part1.pcap
+
+=== CAPTURE 2: Remote Traffic (Client on rlab5, Server on another ilab) ===
+
+# Step 1: Run server on another ilab machine
+ssh your_netid@rlab1.cs.rutgers.edu
+python3 server.py
+
+# Step 2: Capture from rlab5
+sudo tshark -i any -f "host <SERVER_IP> and tcp port 30069" -w proj1_part2.pcap &
+python3 client.py
+
+=== ANALYSIS COMMANDS ===
+
+# View captured packets
+tshark -r proj1_part1.pcap
+
+# View with more detail
+tshark -r proj1_part1.pcap -V
+
+# Filter for specific data
+tshark -r proj1_part1.pcap -Y "tcp.port == 30069"
+
+=== TROUBLESHOOTING ===
+
+# Check if port is in use
+netstat -an | grep 30069
+
+# Kill any processes using the port
+sudo lsof -ti:30069 | xargs kill -9
+
+# Check tshark installation
+which tshark
