@@ -1,0 +1,47 @@
+
+1
+Project 1: TCP Socket Programming and Packet
+Capture
+Objectives
+In this project you will:
+Learn Python socket programming by building a client and server.
+Capture and analyze network traffic using both ` tshark ` (CLI) and Wireshark (GUI).
+Relate application-layer behavior (echo messages) to transport-layer packets.
+Prepare for future projects that build upon socket programming.
+Assigned Port Number
+Each student is assigned a ** unique TCP port number ** (starting from 30000).
+The list of port numbers is published on Canvas.
+** Your server must run on your assigned port number.**
+When submitting your project, ** explicitly state the port number you used ** in your report.
+Submissions without the correct port number will not receive credit.
+Part 1: Understanding and Modifying the Code
+1. Start from the provided ` proj.py ` . Understand how the combined server and client threads work.
+2. Remove the two ` time.sleep(5) ` statements and observe what changes.
+3. Split the code into two separate files: ` server.py ` and ` client.py ` .
+4. Modify the server so that it ** reverses the string** sent by the client and ** swaps the case** of all
+characters before returning the response.
+Example: Client sends ` HELLO ` → Server returns ` olleh ` .
+5. Extend the client to read input lines from ` in-proj.txt ` , send them to the server, and write the
+server’s response to ` out-proj.txt ` .
+Part 2: Capturing Traffic
+You may use either ** tshark (CLI) ** or ** Wireshark (GUI) ** . Both produce ` .pcap ` files that can be analyzed
+later.
+** Important: ** Please set the capture interface to ** ` any ` ** .
+This way you can see traffic from both the loopback (local) and external (remote) interfaces, and
+understand the difference between them.
+Capture 1 (both client and server on rlab5, loopback traffic visible via ` any ` )
+** tshark** :
+```bash
+tshark -i any -f "tcp port <ASSIGNED_PORT>" -w proj1_part1.pcap
+```
+** Wireshark** :
+1. Start Wireshark on rlab5.
+2. Select interface ` any ` .
+3. Set capture filter: ` tcp port <ASSIGNED_PORT> ` .
+4. Start capturing, then stop after the program finishes.
+5. Save as ` proj1_part1.pcap ` .
+Capture 2 (client on rlab5, server on another ilab machine)
+** tshark** :
+```bash
+tshark -i any -f "host <SERVER_IP> and tcp port <ASSIGNED_PORT>" -w
+proj1_part2.pcap
