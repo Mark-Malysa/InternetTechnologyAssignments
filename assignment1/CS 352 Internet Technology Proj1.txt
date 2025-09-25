@@ -1,0 +1,64 @@
+
+1
+CS 352 Internet Technology
+Project 1: TCP Socket Programming and Packet Capture
+• Released: September 15, 2025; Due: October 3, 2025
+Objec@ves
+• The goal of this project is to help you explore Python programming and specifically
+Python’s socket programming interface. Further, this exercise will serve as a founda@on
+for other upcoming programming projects that use sockets.
+• Star@ng with the sample working code in proj.py, you will construct two programs
+client.py and server.py which communicate with each other over the socket API.
+Currently, proj.py consists of server code and client code wriEen as two separate
+threads.
+• Capture and analyze network traffic using Wireshark.
+• Relate applica@on-layer behavior (echo messages) to transport-layer packets.
+How to work through this project (part1)
+Step 1: Understand the func@onality as is
+Understand the func@onality implemented in the proj.py program. First, download, save and
+execute the program as is in your ilab environment. Make sure it executes successfully and
+according to how you would expect. For example, you might see something like this if you run
+the command python3 proj.py on your ilab machine terminal. Make sure you run this on rlab5
+machine only. Wireshark is available ONLY on rlab5. Replace the server port with you assigned
+port.
+[S]: Server socket created
+[S]: Server host name is porthos.cs.rutgers.edu
+[S]: Server IP address is 128.6.25.90
+[C]: Client socket created
+[S]: Got a connecDon request from a client at (’128.6.25.90’, 59814)
+[C]: Data received from server: Welcome to CS 352!
+Done.
+Step 2: Remove sleeps and re-run
+Remove the two statements in the program that say @me.sleep(5). And then answer the
+ques@on below.
+Step 3: Separate proj into two programs
+Separate the server code and client code into two different programs, server.py and client.py.
+Execute the server program first and then execute the client program on rlab5 . You should s@ll
+get the same set of print messages as in the combined threaded code in proj.py.
+Step 4: Reversing the message
+In the program provided, the server just sends a message string to the client aaer it connects.
+Modify the server so that when the client sends a string to the server, the server reverses the
+string before sending it back to the client. Further, we would like you to swap the case (uppercase
+! lowercase and vice versa) of the string sent by the client. For example, if the client sends HELLO
+to the server, the client should receive olleh. Your client program should print the string sent by
+the client and the corresponding string received by the client from the server.
+Step 5: Reading strings from a file
+Now make your client program read each line from an input file in-proj.txt and send it to the
+server. Your server program should print each reversed output to a file out-proj.txt. Your output
+filename must match exactly with the one shown. A sample input file is provided. You are
+welcome to modify this file and try with your own sample inputs. If it helps, you may assume each
+line will be at most 200 characters long. The input file may contain mul@ple lines. Each input line
+may contain any character that can be typed on a standard US qwerty keyboard, including space.
+Sample in-proj.txt
+Eva, This Prof is amazing
+Jets hardly win in any given year
+Madam In Eden, I'm Adam
+a socket needs IP address and port
+How to work through this Project (Part 2: Capturing Traffic)
+You may use either tshark (CLI) or Wireshark (GUI). Both produce .pcap files that can be
+analyzed later.
+Important: Please set the capture interface to ‘any’. This way you can see traffic from both the
+loopback (local) and external (remote) interfaces and understand the difference between them.
+Capture 1 (both client and server on rlab5, loopback traffic visible via any)
+• tshark
+sudo tshark -i any -f ''tcp port <ASSIGNED PORT>" -w proj1_part1 .pcap
