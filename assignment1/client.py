@@ -11,10 +11,15 @@ def client():
     # Define the port on which you want to connect to the server
     port = 30069  # Using assigned port 30069
     localhost_addr = socket.gethostbyname(socket.gethostname())
+    server_addr = "128.6.13.2"
 
     # connect to the server on local machine
-    server_binding = (localhost_addr, port)
-    cs.connect(server_binding)
+    server_binding = (server_addr, port)
+    try:
+        cs.connect(server_binding)
+    except Exception as e:
+        print(f"{e}")
+        
 
     # Receive data from the server
     data_from_server=cs.recv(100)
