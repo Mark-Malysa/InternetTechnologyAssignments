@@ -8,7 +8,7 @@ def server():
         print('socket open error: {}\n'.format(err))
         exit()
 
-    server_binding = ('', 30069)  # Using assigned port 30069
+    server_binding = ('', 30069)  # Using Mark Malysa's port 30069
     ss.bind(server_binding)
     ss.listen(1)
     host = socket.gethostname()
@@ -35,7 +35,7 @@ def server():
         client_string = data_from_client.decode('utf-8')
         print("[S]: Received from client: {}".format(client_string))
         
-        # Reverse the string and swap case
+        # Reverse string and swap case
         processed_string = client_string[::-1].swapcase()
         print("[S]: Sending to client: {}".format(processed_string))
         

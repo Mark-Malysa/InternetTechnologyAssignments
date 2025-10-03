@@ -9,7 +9,7 @@ def client():
         exit()
         
     # Define the port on which you want to connect to the server
-    port = 30069  # Using assigned port 30069
+    port = 30069  # Using Mark Malysa's port 30069
     localhost_addr = socket.gethostbyname(socket.gethostname())
     server_addr = "128.6.13.2"
 
