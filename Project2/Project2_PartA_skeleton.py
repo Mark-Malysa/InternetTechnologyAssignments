@@ -86,9 +86,24 @@ def parse_response(data):
         offset += rdlength
         print("atype and rdlength",atype,rdlength,type(rdata))
         '''
+
 		 TODO  Add code to extract IPv4 address or IPv6 address based on atype and rdlength
 		 Answer should contain three fields "type","ip", and "ttl"
         '''
+        # done below:
+        if atype == 1: # A (IPV4)
+            ip = ".".join(map(str, rdata))
+            rtype = "A"
+        
+        elif atype == 28: # AAAA (IPV6)
+            ip = ":".join(f"{rdata[i]:02x}{rdata[i+1]:02x}" for i in range(0, 16, 2))
+            rtype = "AAAA"
+        else:
+            print("Skipping atype",atype)
+            continue # skip if it is something else
+        
+        answers.append({"type": rtype, "ip": ip, "ttl": ttl})
+
     response["answers"] = answers
     return response
 

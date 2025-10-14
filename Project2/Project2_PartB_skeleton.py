@@ -2,6 +2,7 @@ import socket
 import struct
 import random
 import json
+from unicodedata import name
 
 # Example query spec as JSON
 dns_query_spec = {
@@ -79,11 +80,24 @@ def parse_rr(data, offset):
     offset += 10
     rdata = data[offset:offset+rdlength]
     offset += rdlength
-    record={}
-    ##########
-    ##  Your code here to create a record given data 
-    ## record fields shoud include  hostname, ttl, atype, rtype, ip, nsname
-    #################
+
+    # confirm this correct - it might be (rdlength +/- offset) or sum
+    rdata_start = offset
+    ip = None
+    nsname = None
+    rtype = None
+
+    if atype == 1:
+        rtype = "A"
+        ip = ".".join(map(str, rdata))
+    elif atype == 28:
+        rtype = "AAAA"
+        ip = ":".join(f"{rdata[i]:02x}{rdata[i+1]:02x}" for i in range(0, 16, 2))
+    elif atype == 2:
+        rtype = "NS"
+        nsname, _ = parse_name(data, rdata_start)
+
+    record = {"hostname": name, "ttl": ttl, "atype": atype, "rtype": rtype, "ip": ip, "nsname": nsname} 
 
     return record,offset
 

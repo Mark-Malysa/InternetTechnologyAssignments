@@ -74,9 +74,32 @@ def parse_name(data, offset):
 
 #your parse_rr from part2
 def parse_rr(data, offset):
-  record={}
-  ## your code from part 2
-  return record, offset
+    """Parse a single resource record and return record + new offset."""
+    name, offset = parse_name(data, offset)
+    atype, aclass, ttl, rdlength = struct.unpack("!HHIH", data[offset:offset+10])
+    offset += 10
+    rdata = data[offset:offset+rdlength]
+    offset += rdlength
+
+    # confirm this correct - it might be (rdlength +/- offset) or sum
+    rdata_start = offset
+    ip = None
+    nsname = None
+    rtype = None
+
+    if atype == 1:
+        rtype = "A"
+        ip = ".".join(map(str, rdata))
+    elif atype == 28:
+        rtype = "AAAA"
+        ip = ":".join(f"{rdata[i]:02x}{rdata[i+1]:02x}" for i in range(0, 16, 2))
+    elif atype == 2:
+        rtype = "NS"
+        nsname, _ = parse_name(data, rdata_start)
+
+    record = {"hostname": name, "ttl": ttl, "atype": atype, "rtype": rtype, "ip": ip, "nsname": nsname} 
+
+    return record,offset
 
 def parse_response(data):
     response = {}
@@ -96,11 +119,15 @@ def parse_response(data):
     response["arcount"] = ARCOUNT
 
     offset = 12
-    # Skip questions
+    # Skip questions (with compression handling)
     for _ in range(QDCOUNT):
         while data[offset] != 0:
+            if (data[offset] & 0xC0) == 0xC0:
+                offset += 2
+                break
             offset += data[offset] + 1
-        offset += 1
+        else:
+            offset += 1
         offset += 4  # qtype + qclass
 
     # Parse Answer RRs
@@ -108,13 +135,19 @@ def parse_response(data):
     for _ in range(ANCOUNT):
         rr, offset = parse_rr(data, offset)
         answers.append(rr)
-    authorities=[]
-    # Parse Authority RRs (NS)
-    #Add code to parse NS records
-    additionals=[]
-    # Parse Additional RRs (A, AAAA, etc.)
-    #Add code to Parse additonal records
-    
+
+    # Parse Authority RRs
+    authorities = []
+    for _ in range(NSCOUNT):
+        rr, offset = parse_rr(data, offset)
+        authorities.append(rr)
+
+    # Parse Additional RRs
+    additionals = []
+    for _ in range(ARCOUNT):
+        rr, offset = parse_rr(data, offset)
+        additionals.append(rr)
+
     response["answers"] = answers
     response["authorities"] = authorities
     response["additionals"] = additionals
@@ -140,8 +173,33 @@ def iterative_resolve(query_spec):
 
     while servers: 
         server_ip = servers.pop(0)
-         
+        print("Querying server:", server_ip)
+        # set RD=0 for non recursive query
+        query_spec["rd"] = 0
+        response = dns_query(query_spec, server=(server_ip, 53))
 
+        if response["tc"] == 1:
+            return {"error": "Truncated response"}
+        if response["ra"] == 0:
+            return {"error": "Recursion not available"}
+        if response["rcode"] != 0:
+            return {"error": f"RCODE {response['rcode']}"}
+        
+        if response["answers"]:
+            return response["answers"][0] # return first ip/ttl
+        
+        if response["authorities"]:
+            first_ns = response["authorities"][0]["nsname"]
+            for add in response["additionals"]:
+                if add["hostname"] == first_ns and add["ip"]:
+                    servers.append(add["ip"])
+                    break
+                else:
+                    return {"error": "No glue found"}
+        else:
+            return {"error": "No authorities found"}
+    else:
+        return {"error": "No servers left/found"}    
            ## code main loop
            #1. dns_query to server_ip
            #2. check if response ['answers] has ip address, if so done , return ip addrees
