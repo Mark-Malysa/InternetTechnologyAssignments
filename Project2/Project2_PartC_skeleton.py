@@ -256,8 +256,10 @@ def iterative_resolve(query_spec):
 
 
 if __name__ == "__main__":
-    # Read questions from Input.json
-    with open("Input.json", "r") as f:
+    # Read questions from Input.json or command-line argument
+    import sys
+    input_file = sys.argv[1] if len(sys.argv) > 1 else "Input.json"
+    with open(input_file, "r") as f:
         questions = json.load(f)
     
     results = []
