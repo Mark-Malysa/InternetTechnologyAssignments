@@ -1,15 +1,8 @@
 [
     {
-        "qname": "rutgers.edu",
-        "qtype": 2
-    },
-    {
-        "qname": "princeton.edu",
-        "qtype": 2
-    },
-    {
-        "qname": "stanford.edu",
+        "qname": "cs.rutgers.edu",
         "qtype": 2
     }
 ]
+
 
