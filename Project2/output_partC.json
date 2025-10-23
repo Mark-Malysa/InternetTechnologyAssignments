@@ -1,0 +1,52 @@
+[
+  {
+    "question": {
+      "qname": "ilab1.cs.rutgers.edu",
+      "qtype": 1
+    },
+    "answers": [
+      {
+        "hostname": "ilab1.cs.rutgers.edu",
+        "ttl": 3600,
+        "atype": 1,
+        "rtype": "A",
+        "ip": "128.6.13.2",
+        "nsname": null
+      }
+    ]
+  },
+  {
+    "question": {
+      "qname": "ilab1.cs.rutgers.edu",
+      "qtype": 28
+    },
+    "answers": [
+      {
+        "hostname": "ilab1.cs.rutgers.edu",
+        "ttl": 3600,
+        "atype": 28,
+        "rtype": "AAAA",
+        "ip": "2620:0000:0d60:ac0d:0000:0000:0000:0002",
+        "nsname": null
+      }
+    ]
+  },
+  {
+    "question": {
+      "qname": "whale.stanford.edu",
+      "qtype": 28
+    },
+    "answers": {
+      "error": "No glue records found in additional section"
+    }
+  },
+  {
+    "question": {
+      "qname": "www.princeton.edu",
+      "qtype": 1
+    },
+    "answers": {
+      "error": "No glue records found in additional section"
+    }
+  }
+]

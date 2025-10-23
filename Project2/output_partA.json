@@ -1,0 +1,93 @@
+[
+  {
+    "id": 46353,
+    "qr": 1,
+    "opcode": 0,
+    "aa": 0,
+    "tc": 0,
+    "rd": 1,
+    "ra": 1,
+    "rcode": 0,
+    "qdcount": 1,
+    "ancount": 1,
+    "answers": [
+      {
+        "type": "A",
+        "ip": "128.6.13.2",
+        "ttl": 1107
+      }
+    ],
+    "question": {
+      "qname": "ilab1.cs.rutgers.edu",
+      "qtype": 1
+    }
+  },
+  {
+    "id": 64037,
+    "qr": 1,
+    "opcode": 0,
+    "aa": 0,
+    "tc": 0,
+    "rd": 1,
+    "ra": 1,
+    "rcode": 0,
+    "qdcount": 1,
+    "ancount": 1,
+    "answers": [
+      {
+        "type": "AAAA",
+        "ip": "2620:0000:0d60:ac0d:0000:0000:0000:0002",
+        "ttl": 3018
+      }
+    ],
+    "question": {
+      "qname": "ilab1.cs.rutgers.edu",
+      "qtype": 28
+    }
+  },
+  {
+    "id": 57421,
+    "qr": 1,
+    "opcode": 0,
+    "aa": 0,
+    "tc": 0,
+    "rd": 1,
+    "ra": 1,
+    "rcode": 0,
+    "qdcount": 1,
+    "ancount": 0,
+    "answers": [],
+    "question": {
+      "qname": "whale.stanford.edu",
+      "qtype": 28
+    }
+  },
+  {
+    "id": 56593,
+    "qr": 1,
+    "opcode": 0,
+    "aa": 0,
+    "tc": 0,
+    "rd": 1,
+    "ra": 1,
+    "rcode": 0,
+    "qdcount": 1,
+    "ancount": 3,
+    "answers": [
+      {
+        "type": "A",
+        "ip": "104.18.5.101",
+        "ttl": 300
+      },
+      {
+        "type": "A",
+        "ip": "104.18.4.101",
+        "ttl": 300
+      }
+    ],
+    "question": {
+      "qname": "www.princeton.edu",
+      "qtype": 1
+    }
+  }
+]

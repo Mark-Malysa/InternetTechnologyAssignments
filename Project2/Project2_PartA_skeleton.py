@@ -113,7 +113,59 @@ def dns_query(query_spec, server=("8.8.8.8", 53)):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(5)
     sock.sendto(query, server)
-    data, _ = sock.recvfrom(512)
+    data, _ = sock.recvfrom(4096)  # Increased buffer to handle larger responses
     sock.close()
-    result=parse_response(data)
+    result = parse_response(data)
+    
+    # Check for errors
+    if result["tc"] == 1:
+        return {"error": "Truncated response - message was truncated"}
+    if result["ra"] == 0:
+        return {"error": "Recursion not available - server does not support recursion"}
+    if result["rcode"] != 0:
+        return {"error": f"DNS error - RCODE {result['rcode']}"}
+    
     return result
+
+
+if __name__ == "__main__":
+    # Read questions from Input.json
+    with open("Input.json", "r") as f:
+        questions = json.load(f)
+    
+    results = []
+    
+    # Process each question
+    for q in questions:
+        print(f"Querying {q['qname']} for type {q['qtype']}...")
+        
+        # Create DNS query spec
+        dns_query_spec = {
+            "id": random.randint(0, 65535),
+            "qr": 0,      # query
+            "opcode": 0,  # standard query
+            "rd": 1,      # recursion desired
+            "questions": [
+                {
+                    "qname": q["qname"],
+                    "qtype": q["qtype"],
+                    "qclass": 1   # IN
+                }
+            ]
+        }
+        
+        # Send query and get response
+        response = dns_query(dns_query_spec)
+        
+        # Add original question info to response
+        response["question"] = q
+        results.append(response)
+        
+        print(json.dumps(response, indent=2))
+        print("-" * 60)
+    
+    # Write all results to output file
+    with open("output_partA.json", "w") as f:
+        json.dump(results, f, indent=2)
+    
+    print(f"\nAll responses saved to output_partA.json")
