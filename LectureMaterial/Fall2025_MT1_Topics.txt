@@ -1,0 +1,8 @@
+Fall 2025   Mid term topics
+
+1. Packet Switching vs Message Switching vs Circuit switching. Measurement problems
+2. DNS, iterative vs non-iterative resolvers , name servers vs A records
+3. http variants 1.0, 1.1, 2/ http protocol(request, response, header lines , status codes- classes)
+4. SMTP (smtp protocol interactions), IMAP vs POP3 vs Http email clients
+5. Transport layer protocols (Issues: packet corruption, loss, delay, ack, flow control, congestion control)
+6. UDP- datagram protocol,  reliable transport protocols- Go back N vs Selective repeat

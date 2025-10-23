@@ -1,0 +1,112 @@
+
+Solutions to Quiz1
+Question 1  1 point 
+A host A is connected to Host B via a Router R.  Link L1 connects A to R and link L2 connects R to B.  
+Both links have a bandwidth of 10^6 bytes/second.   
+A file of size 1000 Bytes is transferred using circuit switching. 
+The circuit set up time is 0.05 msec. What is the total time taken to transfer the file from A to B. 
+
+ Your answer in  Transfer time= 10^3/(10^6)=1 millisecond + set up time 0.05 msec. Answer 1.05 msec Just input  a number.
+
+A---------R----------B
+
+      L1           L2
+
+ 
+
+Question 2  1 point
+A host A is connected to Host B via a Router R.  Link L1 connects A to R and link L2 connects R to B.  
+Both links have a bandwidth of 10^6 bytes/second.   A file of size 1000 Bytes is transferred using message switching. 
+What is the total time taken to transfer the file from A to B.  Ignore propagation delay. 
+Your answer in  Transfer time  for each link 10^3/(10^6) = 1 millisecond. Total time is 2 msec 
+
+A---------R----------B
+
+      L1           L2
+
+ 
+
+Question 3    1 point
+A host A is connected to Host B via a Router R.  Link L1 connects A to R and link L2 connects R to B.  
+Both links have a bandwidth of 10^6 bytes/second.   A file of size 1000 Bytes is transferred using packet  switching. 
+Assume a packet size of 100 Bytes. What is the total time taken to transfer the file from A to B.  
+Ignore propagation delay. 
+packet transfer time 100/(10^6) = 0.1 msec on each link. First packet takes 0.2 msec and the remaining 9 packets take 0.1 msec to arrive at B
+total time 0.2 + 0.9 =1.1
+Your answer in milliseconds. Input Just a number.
+
+
+A---------R----------B
+
+      L1           L2
+
+ 
+Question 4 1 point
+A host A is connected to Host B via a Router R.  Link L1 connects A to R and link L2 connects R to B.  
+Both links have a bandwidth of 10^6 bytes/second.   A file of size 1000 Bytes is transferred using circuit switching. 
+The circuit set up time is 0.05 msec. What is the total time taken to transfer the file from A to B.  
+Propagation delay is 0.05 msec. 
+same as 1 (1.05) + E2E PD = 0.1 = 1.15 milliseconds  (some of you have taken e2e as 0.05, 1.1 also will be marked as correct)
+The Question should have explicitly mentioned PD is per link.
+Your answer in -----  milliseconds. Just input  a number.
+
+A---------R----------B
+
+      L1           L2
+
+ 
+
+Question 5 1 pts
+A host A is connected to Host B via a Router R.  Link L1 connects A to R and link L2 connects R to B.  
+Both links have a bandwidth of 10^6 bytes/second.   
+A file of size 1000 Bytes is transferred using message switching. 
+What is the total time taken to transfer the file from A to B.  
+Propagation delay is 0.05 msec. 
+Time to transfer msg over each link 1000/(10^6) + 0.05= 1.05 , total time 2.1 
+Your answer in ------ milliseconds. Input Just a number.
+
+A---------R----------B
+
+      L1           L2
+
+ 
+Flag question: Question 6
+Question 6  1 pts
+A host A is connected to Host B via a Router R.  Link L1 connects A to R and link L2 connects R to B.  
+Both links have a bandwidth of 10^6 bytes/second.   
+A file of size 1000 Bytes is transferred using packet  switching. 
+Assume a packet size of 100 Bytes. What is the total time taken to transfer the file from A to B.  
+Propagation delay is 0.05msec. Your answer in ------ milliseconds. Input Just a number.
+
+Time for first packet =0.3 (0.1+0.1+ 2*0.05) + 9 packets every 0.1=0.9, So total transfer time 1.2
+A---------R----------B
+
+      L1           L2
+
+ 
+
+Question 7  1 point
+A host A is connected to Host B via a Router R.  Link L1 connects A to R and link L2 connects R to B.  
+Both links have a bandwidth of 10^6 bytes/second.   
+A file of size 1000 Bytes is transferred using message switching. 
+What is the total time taken to transfer the file from A to B.  
+Propagation delay is 0.05 msec.  Header processing overhead is 0.05 msec .Your answer in ------ milliseconds. Input Just a number.
+Same as answer to Question 5 plus 1 header processing=0.05 , so total time 2.15
+A---------R----------B
+
+      L1           L2
+
+ 
+
+Question 8 1 point
+A host A is connected to Host B via a Router R.  Link L1 connects A to R and link L2 connects R to B.  
+Both links have a bandwidth of 10^6 bytes/second.   A file of size 1000 Bytes is transferred using packet  switching. 
+Assume packet size of 100 Bytes. What is the total time taken to transfer the file from A to B.  
+Propagation delay is 0.05msec. Header processing delay is 0.05 msec. 
+Your answer in ------ milliseconds. Input Just a number.
+Same as Answer to Question 6 + header over head for 10 packets= 0.5msec , So 1.2 +0.5 = 1.7 msec
+
+A---------R----------B
+
+      L1           L2
+

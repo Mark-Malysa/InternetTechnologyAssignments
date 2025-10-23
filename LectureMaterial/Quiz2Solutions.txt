@@ -1,0 +1,52 @@
+Question1 2 pts
+
+FInd out how many root servers are there? [number]  What is the string you entered in the URL to find out the root servers?[character]
+13  .
+ 
+
+Question2 1 pts
+
+What is the IP address of e.root-servers.net?
+192.203.230.10
+ 
+
+Question3 2 pts
+Edit this Question Delete this Question
+FInd out how many EDU servers are there? [number]  What is the string you entered in the URL to find out the EDU  servers?[character]
+13  (EDU or EDU.)
+ 
+
+Question4   3 pts
+
+FInd out how many  name servers are there at Rutgers?  [number1]  How many name servers are local [number2] and how many are external [number3]
+5, 2, 3 
+ 
+
+Question5   1 pts
+
+FInd out how many  name servers are responsible for computer science department?  [number1] 
+2
+ 
+
+Question6  1 pts
+
+Name server runs2.rutgers.edu is the authoritative name server for cs.rutgers.edu
+TRUE
+ 
+
+Question7  1 pts
+
+Name server ns7.dnsmadeeasy.com is the authoritative name server for cs.rutgers.edu
+FALSE
+ 
+
+Question8  3 pts
+
+Number of name servers at Princeton University is [number1] . Number of Local princeton name servers is [number2]  Number of external princeton name servers is [number3]
+
+ 9, 0, 9
+
+Question9  1 pts
+
+what is the IP address of rlab5 machine in the CS department at rutgers [address]
+128.6.13.25
