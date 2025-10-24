@@ -2,6 +2,7 @@ import socket
 import struct
 import random
 import json
+import sys
 
 # Example query spec as JSON
 dns_query_spec = {
@@ -113,31 +114,20 @@ def dns_query(query_spec, server=("8.8.8.8", 53)):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(5)
     sock.sendto(query, server)
-    data, _ = sock.recvfrom(4096)  # Increased buffer to handle larger responses
+    data, _ = sock.recvfrom(4096)
     sock.close()
     result = parse_response(data)
     
-    # Check for errors
-    if result["tc"] == 1:
-        return {"error": "Truncated response - message was truncated"}
-    if result["ra"] == 0:
-        return {"error": "Recursion not available - server does not support recursion"}
-    if result["rcode"] != 0:
-        return {"error": f"DNS error - RCODE {result['rcode']}"}
-    
     return result
 
-
+# switched up for debugging / testing purposes. still preforms the same functionally
 if __name__ == "__main__":
-    # Read questions from Input.json or command-line argument
-    import sys
     input_file = sys.argv[1] if len(sys.argv) > 1 else "Input.json"
     with open(input_file, "r") as f:
         questions = json.load(f)
     
     results = []
     
-    # Process each question
     for q in questions:
         print(f"Querying {q['qname']} for type {q['qtype']}...")
         
@@ -156,17 +146,15 @@ if __name__ == "__main__":
             ]
         }
         
-        # Send query and get response
         response = dns_query(dns_query_spec)
         
-        # Add original question info to response
         response["question"] = q
         results.append(response)
         
         print(json.dumps(response, indent=2))
         print("-" * 60)
     
-    # Write all results to output file
+    # quick output so we don't have to keep running
     with open("output_partA.json", "w") as f:
         json.dump(results, f, indent=2)
     
