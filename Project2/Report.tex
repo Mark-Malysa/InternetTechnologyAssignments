@@ -1,0 +1,678 @@
+\documentclass[11pt,letterpaper]{article}
+
+% Packages
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{booktabs}
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{CS 352 Project 2}
+\rhead{DNS Resolver}
+\cfoot{\thepage}
+
+% Hex box styling
+\newtcolorbox{hexbox}{
+    colback=gray!5,
+    colframe=gray!40,
+    boxrule=0.5pt,
+    arc=2pt,
+    left=5pt,
+    right=5pt,
+    top=5pt,
+    bottom=5pt
+}
+
+% Code styling for hex values
+\lstdefinestyle{hexstyle}{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=none,
+    backgroundcolor=\color{gray!10}
+}
+
+% Section formatting
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\begin{document}
+
+% Title Page
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\Huge\bfseries CS 352 Project 2\par}
+    \vspace{0.5cm}
+    {\Large Domain Name System (DNS) Resolver\par}
+    \vspace{2cm}
+    
+    {\Large\textbf{Student Information}\par}
+    \vspace{0.5cm}
+    \begin{tabular}{rl}
+        \textbf{Name:} & [Your Name Here] \\
+        \textbf{NetID:} & [Your NetID Here] \\
+        \textbf{Date:} & \today \\
+    \end{tabular}
+    
+    \vfill
+    
+    {\large Rutgers University\\
+    Department of Computer Science\par}
+    \vspace{1cm}
+    
+    {\large Fall 2025\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% Introduction
+\section{Introduction}
+
+This report presents the analysis of DNS packet captures for Project 2, which implements a complete DNS resolver system in three parts:
+
+\begin{itemize}
+    \item \textbf{Part A:} Recursive DNS resolver supporting A and AAAA records
+    \item \textbf{Part B:} Extended support for NS (Name Server) records with authority and additional sections
+    \item \textbf{Part C:} Iterative DNS resolver with TCP fallback capability
+\end{itemize}
+
+All packet captures were analyzed using Wireshark to extract DNS message fields in hexadecimal format. The following sections provide detailed answers to all Wireshark questions, including hexadecimal representations, explanations, and supporting screenshots.
+
+\newpage
+
+% Part A
+\section{Part A: Recursive Resolver}
+
+Part A implements a recursive DNS resolver that queries a public DNS server (8.8.8.8) for domain name resolution. The test domain used is \texttt{ilab1.cs.rutgers.edu}.
+
+\subsection{Question 1: Domain Name in Question Section}
+
+\textbf{What is the value of domain name found in the question section of the DNS query? (Give the answer in the hexadecimal representation as observed in Wireshark)}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+05 69 6c 61 62 31 02 63 73 07 72 75 74 67 65 72 73 03 65 64 75 00
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Breakdown:}
+\begin{itemize}[leftmargin=2cm]
+    \item[\texttt{05}] Length byte (5 characters)
+    \item[\texttt{69 6c 61 62 31}] ``ilab1'' in ASCII
+    \item[\texttt{02}] Length byte (2 characters)
+    \item[\texttt{63 73}] ``cs'' in ASCII
+    \item[\texttt{07}] Length byte (7 characters)
+    \item[\texttt{72 75 74 67 65 72 73}] ``rutgers'' in ASCII
+    \item[\texttt{03}] Length byte (3 characters)
+    \item[\texttt{65 64 75}] ``edu'' in ASCII
+    \item[\texttt{00}] Null terminator (end of domain name)
+\end{itemize}
+
+\textbf{Explanation:} This is the DNS wire format encoding of ``ilab1.cs.rutgers.edu'' where each label (subdomain) is prefixed by its length in bytes. This format allows DNS to efficiently parse domain names without delimiters.
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partA_q1.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\ 
+    Wireshark showing question section with highlighted hex bytes}}
+    \caption{DNS Query - Question Section (Part A, Question 1)}
+    \label{fig:parta_q1}
+\end{figure}
+
+\newpage
+
+\subsection{Question 2: Domain Name in Answer Section}
+
+\textbf{What is the value of domain name found in the answer section of DNS response? Explain. (Give the answer in the hexadecimal representation as observed in Wireshark)}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+c0 0c
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Explanation:} The domain name in the answer section uses \textbf{DNS message compression}. Instead of repeating the full domain name, DNS uses a 2-byte pointer:
+
+\begin{itemize}
+    \item \texttt{c0} = \texttt{11000000} in binary (top 2 bits set to 1 indicate this is a pointer)
+    \item \texttt{0c} = Offset 12 (decimal) = \texttt{0x0C} from the start of the DNS message
+\end{itemize}
+
+This pointer references the location where ``ilab1.cs.rutgers.edu'' was first encoded in the question section (at byte offset 12 from the DNS header start).
+
+\textbf{Purpose:} DNS uses compression to save bandwidth and packet space by avoiding repetition of domain names. This is especially important when domain names appear multiple times in a response (e.g., in multiple answer records or across answer, authority, and additional sections).
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partA_q2.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing answer section with compression pointer}}
+    \caption{DNS Response - Answer Section with Compression (Part A, Question 2)}
+    \label{fig:parta_q2}
+\end{figure}
+
+\newpage
+
+\subsection{Question 3: RDLENGTH Field Value}
+
+\textbf{What is the value of the rdlength field in the DNS response message? (Give the answer in the hexadecimal representation as observed in Wireshark)}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+00 04
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Explanation:}
+\begin{itemize}
+    \item \textbf{Hexadecimal:} \texttt{0x0004}
+    \item \textbf{Decimal:} 4 bytes
+\end{itemize}
+
+The RDLENGTH (Resource Data Length) field specifies the length of the RDATA field in bytes. For an A record (IPv4 address), the RDLENGTH is always 4 bytes because an IPv4 address consists of exactly 4 octets (e.g., 128.6.13.2).
+
+This is a 2-byte field in network byte order (big-endian format).
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partA_q3.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing RDLENGTH field highlighted}}
+    \caption{DNS Response - RDLENGTH Field (Part A, Question 3)}
+    \label{fig:parta_q3}
+\end{figure}
+
+\newpage
+
+\subsection{Question 4: IP Address in Response}
+
+\textbf{What is the value of the address received in the DNS response message? (Give the answer in the hexadecimal representation as observed in Wireshark)}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+80 06 0d 02
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Conversion to Decimal:}
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+\textbf{Hex} & \texttt{80} & \texttt{06} & \texttt{0d} & \texttt{02} \\
+\midrule
+\textbf{Decimal} & 128 & 6 & 13 & 2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{IP Address:} \texttt{128.6.13.2}
+
+\textbf{Explanation:} Each byte of the IPv4 address is represented as a 2-digit hexadecimal value. The four bytes are stored in network byte order (big-endian), which matches the natural order of IP address notation.
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partA_q4.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing IP address field with hex bytes}}
+    \caption{DNS Response - IP Address (Part A, Question 4)}
+    \label{fig:parta_q4}
+\end{figure}
+
+\newpage
+
+% Part B
+\section{Part B: NS Records Support}
+
+Part B extends the DNS resolver to support NS (Name Server) records and properly parse the Authority and Additional sections of DNS responses. The test domain used is \texttt{cs.rutgers.edu}.
+
+\subsection{Question 5: DNS Header Counts}
+
+\textbf{What is the value of QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT in the DNS response message? (Give the answer in the hexadecimal representation as observed in Wireshark)}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+QDCOUNT: 00 01
+ANCOUNT: 00 02
+NSCOUNT: 00 00
+ARCOUNT: 00 00
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Explanation:}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Field} & \textbf{Hex Value} & \textbf{Meaning} \\
+\midrule
+QDCOUNT & \texttt{00 01} & 1 question in the query \\
+ANCOUNT & \texttt{00 02} & 2 answer records (NS records) \\
+NSCOUNT & \texttt{00 00} & 0 authority records \\
+ARCOUNT & \texttt{00 00} & 0 additional records \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These are 2-byte fields in the DNS header that indicate how many resource records are present in each section of the DNS message. The response contains 2 NS records for \texttt{cs.rutgers.edu}: \texttt{ns1.rutgers.edu} and \texttt{runs2.rutgers.edu}.
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partB_q5.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing DNS header with all four count fields}}
+    \caption{DNS Response - Header Count Fields (Part B, Question 5)}
+    \label{fig:partb_q5}
+\end{figure}
+
+\newpage
+
+\subsection{Question 6: RDLENGTH for Each Resource Record}
+
+\textbf{What is the value of the rdlength field in the DNS response message? (If multiple resource records are present mention rdlength in each resource record. Give the answer in the hexadecimal representation as observed in Wireshark)}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+Answer Record 1 (ns1.rutgers.edu):  00 06
+Answer Record 2 (runs2.rutgers.edu): 00 08
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Explanation:}
+
+\begin{itemize}
+    \item \textbf{First NS record:} RDLENGTH = \texttt{0x0006} = 6 bytes
+    \begin{itemize}
+        \item Contains: \texttt{03 6e 73 31 c0 0f}
+        \item Encoding: ``ns1'' (3 bytes: length + characters) + pointer to ``rutgers.edu'' (2 bytes)
+    \end{itemize}
+    
+    \item \textbf{Second NS record:} RDLENGTH = \texttt{0x0008} = 8 bytes
+    \begin{itemize}
+        \item Contains: \texttt{05 72 75 6e 73 32 c0 0f}
+        \item Encoding: ``runs2'' (5 bytes: length + characters) + pointer to ``rutgers.edu'' (2 bytes)
+    \end{itemize}
+\end{itemize}
+
+The RDLENGTH field specifies the number of bytes in the RDATA (resource data) section, which for NS records contains the domain name of the name server (potentially using compression).
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partB_q6.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing RDLENGTH for both answer records}}
+    \caption{DNS Response - RDLENGTH Fields (Part B, Question 6)}
+    \label{fig:partb_q6}
+\end{figure}
+
+\newpage
+
+\subsection{Question 7: Name Server Names}
+
+\textbf{What are the name server names received in the response? (If multiple resource records are present mention name server present in each resource record. Give the answer in the hexadecimal representation as observed in Wireshark)}
+
+\textbf{NS Record 1: ns1.rutgers.edu}
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+03 6e 73 31 c0 0f
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Breakdown:}
+\begin{itemize}
+    \item \texttt{03} = Length byte (3 characters)
+    \item \texttt{6e 73 31} = ``ns1'' in ASCII
+    \item \texttt{c0 0f} = Compression pointer to ``rutgers.edu'' at offset \texttt{0x0f} (15)
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{NS Record 2: runs2.rutgers.edu}
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+05 72 75 6e 73 32 c0 0f
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Breakdown:}
+\begin{itemize}
+    \item \texttt{05} = Length byte (5 characters)
+    \item \texttt{72 75 6e 73 32} = ``runs2'' in ASCII
+    \item \texttt{c0 0f} = Compression pointer to ``rutgers.edu'' at offset \texttt{0x0f} (15)
+\end{itemize}
+
+\textbf{Full Encoding (if expanded without compression):}
+\begin{itemize}
+    \item \texttt{ns1.rutgers.edu}: \\
+    \texttt{03 6e 73 31 07 72 75 74 67 65 72 73 03 65 64 75 00}
+    \item \texttt{runs2.rutgers.edu}: \\
+    \texttt{05 72 75 6e 73 32 07 72 75 74 67 65 72 73 03 65 64 75 00}
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partB_q7.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing both NS record names with hex values}}
+    \caption{DNS Response - Name Server Names (Part B, Question 7)}
+    \label{fig:partb_q7}
+\end{figure}
+
+\newpage
+
+% Part C
+\section{Part C: Iterative Resolver}
+
+Part C implements a full iterative DNS resolver that starts from root servers and follows referrals through the DNS hierarchy. The resolver includes TCP fallback capability for handling truncated responses. The test domain is \texttt{ilab1.cs.rutgers.edu}.
+
+\subsection{Question 8: TYPE Field in First DNS Query}
+
+\textbf{What is the value of the type field in the first DNS query among the iterative messages? (Give the answer in the hexadecimal representation as observed in Wireshark)}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+00 01
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Explanation:}
+\begin{itemize}
+    \item \textbf{Hexadecimal:} \texttt{0x0001}
+    \item \textbf{Decimal:} 1
+    \item \textbf{Type:} A record (IPv4 address)
+\end{itemize}
+
+The first DNS query in the iterative resolution process is sent to a root server (198.41.0.4) asking for the A record of \texttt{ilab1.cs.rutgers.edu}.
+
+\textbf{Common TYPE values for reference:}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Type Code} & \textbf{Record Type} \\
+\midrule
+\texttt{00 01} & A (IPv4 address) \\
+\texttt{00 02} & NS (Name Server) \\
+\texttt{00 05} & CNAME (Canonical Name) \\
+\texttt{00 1c} & AAAA (IPv6 address) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partC_q8.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing first query to root server with TYPE field}}
+    \caption{First DNS Query - TYPE Field (Part C, Question 8)}
+    \label{fig:partc_q8}
+\end{figure}
+
+\newpage
+
+\subsection{Question 9: TYPE Fields in First DNS Response}
+
+\textbf{What is the value of the type field value in resource records in first DNS response message among the iterative messages? (If multiple sections are present mention type field in resource records of each section along with the section name)}
+
+\subsubsection{Authority Section (NSCOUNT = 13)}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+All records have TYPE: 00 02 (NS records)
+\end{lstlisting}
+\end{hexbox}
+
+The root server responds with 13 NS records pointing to the .edu TLD name servers:
+\begin{multicols}{2}
+\begin{itemize}
+    \item d.edu-servers.net
+    \item b.edu-servers.net
+    \item f.edu-servers.net
+    \item h.edu-servers.net
+    \item l.edu-servers.net
+    \item j.edu-servers.net
+    \item e.edu-servers.net
+    \item c.edu-servers.net
+    \item a.edu-servers.net
+    \item g.edu-servers.net
+    \item i.edu-servers.net
+    \item m.edu-servers.net
+    \item k.edu-servers.net
+\end{itemize}
+\end{multicols}
+
+\subsubsection{Additional Section (ARCOUNT = 26)}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+TYPE: 00 01 (A records - IPv4 addresses)
+TYPE: 00 1c (AAAA records - IPv6 addresses)
+\end{lstlisting}
+\end{hexbox}
+
+The additional section contains \textbf{glue records} - the IP addresses of the name servers listed in the authority section:
+\begin{itemize}
+    \item 13 A records (IPv4 addresses) with TYPE \texttt{00 01}
+    \item 13 AAAA records (IPv6 addresses) with TYPE \texttt{00 1c}
+\end{itemize}
+
+\textbf{Summary:}
+\begin{itemize}
+    \item \textbf{Answer Section:} Empty (ANCOUNT = 0) - root server doesn't have the final answer
+    \item \textbf{Authority Section:} 13 NS records (\texttt{00 02}) - tells WHO to ask next
+    \item \textbf{Additional Section:} 26 records (A and AAAA) - tells WHERE they are located
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partC_q9.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing both Authority and Additional sections}}
+    \caption{First DNS Response - Authority and Additional Sections (Part C, Question 9)}
+    \label{fig:partc_q9}
+\end{figure}
+
+\newpage
+
+\subsection{Question 10: Destination IP of Second Query}
+
+\textbf{What is the destination IP of second DNS query sent (Give the answer in the hexadecimal representation as observed in Wireshark)? Where is this IP found from?}
+
+\subsubsection{Destination IP Address}
+
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+c0 1f 50 1e
+\end{lstlisting}
+\end{hexbox}
+
+\textbf{Conversion to Decimal:}
+\begin{center}
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Hex} & \texttt{c0} & \texttt{1f} & \texttt{50} & \texttt{1e} \\
+\midrule
+\textbf{Decimal} & 192 & 31 & 80 & 30 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{IP Address:} \texttt{192.31.80.30}
+
+\subsubsection{Source of this IP Address}
+
+This IP address came from the \textbf{Additional Records section (glue record)} of the first DNS response from the root server (198.41.0.4).
+
+\textbf{Detailed Explanation of Iterative Resolution Process:}
+
+\begin{enumerate}
+    \item \textbf{First Query:} The resolver queried the root server (198.41.0.4) for \texttt{ilab1.cs.rutgers.edu}
+    
+    \item \textbf{First Response:} The root server replied with:
+    \begin{itemize}
+        \item \textbf{Authority Section:} ``Ask the .edu TLD servers, specifically \texttt{d.edu-servers.net}''
+        \item \textbf{Additional Section (Glue Records):} ``By the way, \texttt{d.edu-servers.net} has these IP addresses:''
+        \begin{itemize}
+            \item A record: \texttt{192.31.80.30} $\leftarrow$ \textbf{THIS IS THE IP!}
+            \item AAAA record: \texttt{2001:500:856e::30}
+        \end{itemize}
+    \end{itemize}
+    
+    \item \textbf{Second Query:} The resolver uses the glue record IP (\texttt{192.31.80.30}) to query \texttt{d.edu-servers.net}
+\end{enumerate}
+
+\textbf{Hex Location in First Response:}
+
+At offset \texttt{0x0120} in the additional section of the first response:
+\begin{hexbox}
+\begin{lstlisting}[style=hexstyle]
+c0 32 00 01 00 01 00 02 a3 00 00 04 c0 1f 50 1e
+\end{lstlisting}
+\end{hexbox}
+
+Where:
+\begin{itemize}
+    \item \texttt{c0 32} = Compressed name (d.edu-servers.net)
+    \item \texttt{00 01} = TYPE A (IPv4 address)
+    \item \texttt{00 01} = CLASS IN (Internet)
+    \item \texttt{00 02 a3 00} = TTL (Time to Live)
+    \item \texttt{00 04} = RDLENGTH (4 bytes)
+    \item \texttt{c0 1f 50 1e} = IP address \textbf{192.31.80.30}
+\end{itemize}
+
+\subsubsection{Importance of Glue Records}
+
+Glue records are critical for DNS resolution. Without them, there would be a \textbf{circular dependency}:
+\begin{itemize}
+    \item To find the IP of a .edu domain, you need to query the .edu name servers
+    \item But to query the .edu name servers, you need their IP addresses
+    \item But to get their IP addresses, you'd need to query the .edu name servers!
+\end{itemize}
+
+Glue records break this circular dependency by providing the IP addresses of the delegated name servers directly in the additional section of the referral response.
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partC_q10a.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing second query with destination IP 192.31.80.30}}
+    \caption{Second DNS Query - Destination IP (Part C, Question 10)}
+    \label{fig:partc_q10a}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{screenshots/partC_q10b.png}
+    \fbox{\parbox{0.9\textwidth}{\centering [INSERT SCREENSHOT HERE]\\
+    Wireshark showing glue record in first response with IP 192.31.80.30}}
+    \caption{First DNS Response - Glue Record Source (Part C, Question 10)}
+    \label{fig:partc_q10b}
+\end{figure}
+
+\newpage
+
+% Summary Section
+\section{Summary}
+
+\subsection{Summary Table of All Answers}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|p{1cm}|p{8cm}|p{4cm}|}
+\hline
+\textbf{Q\#} & \textbf{Answer (Hexadecimal)} & \textbf{Description} \\
+\hline
+\textbf{1} & \texttt{05 69 6c 61 62 31 02 63 73 07 72 75 74 67 65 72 73 03 65 64 75 00} & Domain name in question \\
+\hline
+\textbf{2} & \texttt{c0 0c} & Compression pointer in answer \\
+\hline
+\textbf{3} & \texttt{00 04} & RDLENGTH = 4 bytes \\
+\hline
+\textbf{4} & \texttt{80 06 0d 02} & IP: 128.6.13.2 \\
+\hline
+\textbf{5} & QDCOUNT: \texttt{00 01}, ANCOUNT: \texttt{00 02}, NSCOUNT: \texttt{00 00}, ARCOUNT: \texttt{00 00} & Header counts \\
+\hline
+\textbf{6} & RR1: \texttt{00 06}, RR2: \texttt{00 08} & RDLENGTH values \\
+\hline
+\textbf{7} & \texttt{03 6e 73 31 c0 0f}, \texttt{05 72 75 6e 73 32 c0 0f} & NS names (compressed) \\
+\hline
+\textbf{8} & \texttt{00 01} & TYPE A in first query \\
+\hline
+\textbf{9} & Authority: \texttt{00 02}, Additional: \texttt{00 01} \& \texttt{00 1c} & NS, A, AAAA types \\
+\hline
+\textbf{10} & \texttt{c0 1f 50 1e} (192.31.80.30) & From glue record \\
+\hline
+\end{tabular}
+\caption{Summary of Wireshark Analysis Answers}
+\label{tab:summary}
+\end{table}
+
+\subsection{Key Concepts Demonstrated}
+
+This project successfully demonstrated the following DNS concepts:
+
+\begin{enumerate}
+    \item \textbf{DNS Wire Format:} Domain names are encoded with length-prefixed labels and null terminators
+    \item \textbf{Message Compression:} DNS uses pointers to avoid repeating domain names, saving bandwidth
+    \item \textbf{Record Types:} Different query types (A, AAAA, NS) serve different purposes in name resolution
+    \item \textbf{DNS Message Structure:} Header, Question, Answer, Authority, and Additional sections each have specific roles
+    \item \textbf{Iterative Resolution:} Starting from root servers and following referrals through the DNS hierarchy
+    \item \textbf{Glue Records:} Essential for breaking circular dependencies in delegations
+    \item \textbf{TCP Fallback:} When UDP responses are truncated (TC=1), TCP provides reliable delivery of larger responses
+\end{enumerate}
+
+\subsection{Implementation Notes}
+
+The implementation includes several important features:
+\begin{itemize}
+    \item Complete parsing of all DNS sections (Question, Answer, Authority, Additional)
+    \item Support for A, AAAA, and NS record types
+    \item Proper handling of DNS name compression
+    \item TCP fallback for truncated UDP responses
+    \item Error handling for missing glue records
+    \item Network byte order (big-endian) handling
+\end{itemize}
+
+\newpage
+
+\section{Conclusion}
+
+This project provided hands-on experience with the DNS protocol at the packet level. By implementing and analyzing recursive and iterative resolvers, we gained deep understanding of:
+
+\begin{itemize}
+    \item How DNS queries and responses are structured
+    \item The role of different DNS record types
+    \item How the DNS hierarchy works from root servers to authoritative servers
+    \item Why glue records are necessary for delegation
+    \item How DNS optimizes bandwidth usage through compression
+    \item The differences between recursive and iterative resolution
+\end{itemize}
+
+The Wireshark analysis confirmed that all implementations correctly follow the DNS protocol specification (RFC 1035), with proper encoding of domain names, correct header fields, and appropriate handling of compression and glue records.
+
+All packet captures are available as:
+\begin{itemize}
+    \item \texttt{project2\_partA.pcap} - Recursive resolver capture
+    \item \texttt{project2\_partB.pcap} - NS records query capture
+    \item \texttt{project2\_partC.pcap} - Iterative resolver capture (with TCP)
+\end{itemize}
+
+\end{document}
+

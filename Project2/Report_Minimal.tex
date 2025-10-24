@@ -1,0 +1,126 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{gray!10},
+    breaklines=true,
+    frame=single
+}
+
+\begin{document}
+
+\noindent
+\textbf{\Large CS 352 Project 2: DNS Resolver - Wireshark Questions}\\[0.2cm]
+\textbf{Name:} Your Name \hspace{2cm} \textbf{NetID:} your\_netid\\[0.5cm]
+
+\section*{Part A: Recursive Resolver}
+
+\textbf{Question 1:} What is the value of domain name found in the question section of the DNS query?
+
+\begin{lstlisting}
+05 69 6c 61 62 31 02 63 73 07 72 75 74 67 65 72 73 03 65 64 75 00
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+\textbf{Question 2:} What is the value of domain name found in the answer section of DNS response? Explain.
+
+\begin{lstlisting}
+c0 0c
+\end{lstlisting}
+This is a DNS compression pointer to offset 0x0C where the domain name appears in the question section.
+
+\vspace{0.3cm}
+
+\textbf{Question 3:} What is the value of the rdlength field in the DNS response message?
+
+\begin{lstlisting}
+00 04
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+\textbf{Question 4:} What is the value of the address received in the DNS response message?
+
+\begin{lstlisting}
+80 06 0d 02
+\end{lstlisting}
+IP address: 128.6.13.2
+
+\vspace{0.5cm}
+
+\section*{Part B: NS Records}
+
+\textbf{Question 5:} What is the value of QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT in the DNS response message?
+
+\begin{lstlisting}
+QDCOUNT: 00 01
+ANCOUNT: 00 02
+NSCOUNT: 00 00
+ARCOUNT: 00 00
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+\textbf{Question 6:} What is the value of the rdlength field in the DNS response message?
+
+\begin{lstlisting}
+Answer Record 1: 00 06
+Answer Record 2: 00 08
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+\textbf{Question 7:} What are the name server names received in the response?
+
+NS Record 1 (ns1.rutgers.edu):
+\begin{lstlisting}
+03 6e 73 31 c0 0f
+\end{lstlisting}
+
+NS Record 2 (runs2.rutgers.edu):
+\begin{lstlisting}
+05 72 75 6e 73 32 c0 0f
+\end{lstlisting}
+
+\vspace{0.5cm}
+
+\section*{Part C: Iterative Resolver}
+
+\textbf{Question 8:} What is the value of the type field in the first DNS query among the iterative messages?
+
+\begin{lstlisting}
+00 01
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+\textbf{Question 9:} What is the value of the type field value in resource records in first DNS response message among the iterative messages?
+
+Authority Section:
+\begin{lstlisting}
+TYPE: 00 02 (NS records)
+\end{lstlisting}
+
+Additional Section:
+\begin{lstlisting}
+TYPE: 00 01 (A records)
+TYPE: 00 1c (AAAA records)
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+\textbf{Question 10:} What is the destination IP of second DNS query sent? Where is this IP found from?
+
+\begin{lstlisting}
+c0 1f 50 1e
+\end{lstlisting}
+IP address: 192.31.80.30
+
+This IP came from the Additional Records section (glue record) of the first DNS response from the root server (198.41.0.4). It is the A record for d.edu-servers.net.
+
+\end{document}
+

@@ -1,0 +1,158 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+% Simple hex formatting
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{gray!10},
+    breaklines=true,
+    frame=single
+}
+
+\title{CS 352 Project 2: DNS Resolver\\Wireshark Analysis}
+\author{Your Name (NetID: your\_netid)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Part A: Recursive Resolver}
+
+\subsection*{Question 1}
+\textbf{What is the value of domain name found in the question section of the DNS query?}
+
+\begin{lstlisting}
+05 69 6c 61 62 31 02 63 73 07 72 75 74 67 65 72 73 03 65 64 75 00
+\end{lstlisting}
+
+This encodes "ilab1.cs.rutgers.edu" in DNS wire format where each label is prefixed by its length.
+
+\vspace{0.5cm}
+
+\subsection*{Question 2}
+\textbf{What is the value of domain name found in the answer section of DNS response? Explain.}
+
+\begin{lstlisting}
+c0 0c
+\end{lstlisting}
+
+This is a DNS compression pointer. The bytes \texttt{c0 0c} point to offset 12 (0x0C) in the DNS message where "ilab1.cs.rutgers.edu" was previously encoded in the question section. DNS uses compression to save space by avoiding repetition of domain names.
+
+\vspace{0.5cm}
+
+\subsection*{Question 3}
+\textbf{What is the value of the rdlength field in the DNS response message?}
+
+\begin{lstlisting}
+00 04
+\end{lstlisting}
+
+This is 4 bytes in decimal, which is correct for an IPv4 address (A record).
+
+\vspace{0.5cm}
+
+\subsection*{Question 4}
+\textbf{What is the value of the address received in the DNS response message?}
+
+\begin{lstlisting}
+80 06 0d 02
+\end{lstlisting}
+
+This converts to IP address: 128.6.13.2
+
+\newpage
+
+\section*{Part B: NS Records}
+
+\subsection*{Question 5}
+\textbf{What is the value of QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT in the DNS response message?}
+
+\begin{lstlisting}
+QDCOUNT: 00 01  (1 question)
+ANCOUNT: 00 02  (2 answer records)
+NSCOUNT: 00 00  (0 authority records)
+ARCOUNT: 00 00  (0 additional records)
+\end{lstlisting}
+
+\vspace{0.5cm}
+
+\subsection*{Question 6}
+\textbf{What is the value of the rdlength field in the DNS response message?}
+
+\begin{lstlisting}
+Answer Record 1 (ns1.rutgers.edu):  00 06  (6 bytes)
+Answer Record 2 (runs2.rutgers.edu): 00 08  (8 bytes)
+\end{lstlisting}
+
+\vspace{0.5cm}
+
+\subsection*{Question 7}
+\textbf{What are the name server names received in the response?}
+
+\textbf{NS Record 1: ns1.rutgers.edu}
+\begin{lstlisting}
+03 6e 73 31 c0 0f
+\end{lstlisting}
+
+\textbf{NS Record 2: runs2.rutgers.edu}
+\begin{lstlisting}
+05 72 75 6e 73 32 c0 0f
+\end{lstlisting}
+
+Both use compression pointers (\texttt{c0 0f}) to reference "rutgers.edu".
+
+\newpage
+
+\section*{Part C: Iterative Resolver}
+
+\subsection*{Question 8}
+\textbf{What is the value of the type field in the first DNS query among the iterative messages?}
+
+\begin{lstlisting}
+00 01
+\end{lstlisting}
+
+This is TYPE A (IPv4 address query) to the root server 198.41.0.4.
+
+\vspace{0.5cm}
+
+\subsection*{Question 9}
+\textbf{What is the value of the type field value in resource records in first DNS response message among the iterative messages?}
+
+\textbf{Authority Section:}
+\begin{lstlisting}
+All 13 records have TYPE: 00 02 (NS records)
+\end{lstlisting}
+These are the .edu TLD name servers (d.edu-servers.net, b.edu-servers.net, etc.)
+
+\textbf{Additional Section:}
+\begin{lstlisting}
+TYPE: 00 01 (A records - IPv4 addresses)
+TYPE: 00 1c (AAAA records - IPv6 addresses)
+\end{lstlisting}
+These are glue records providing the IP addresses of the .edu name servers.
+
+\vspace{0.5cm}
+
+\subsection*{Question 10}
+\textbf{What is the destination IP of second DNS query sent? Where is this IP found from?}
+
+\textbf{Destination IP:}
+\begin{lstlisting}
+c0 1f 50 1e
+\end{lstlisting}
+
+This converts to: 192.31.80.30
+
+\textbf{Where it came from:}
+
+This IP came from the Additional Records section (glue record) of the first DNS response from the root server. Specifically, it is the IPv4 address (A record) for d.edu-servers.net, which was listed in the Authority section. The resolver used this glue record to know where to send the second query.
+
+Without glue records, there would be a circular dependency - you'd need to query .edu servers to find their IP addresses, but you need their IP addresses to query them!
+
+\end{document}
+
