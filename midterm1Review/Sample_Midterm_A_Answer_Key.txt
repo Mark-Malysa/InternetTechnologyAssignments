@@ -1,0 +1,51 @@
+Answer Key — Sample Midterm A
+
+1) QUICKIES (sketch)
+a) Transmission = size/rate (depends on R). Propagation = signal travel time (distance/medium).
+b) Circuit: +predictable QoS, −setup. Message: +simple store-fwd, −no pipelining. Packet: +pipelines bursts, −needs reliability/CC. 
+c) NS tells who is authoritative; A/AAAA map name→IP. 
+d) 1.0: non-persistent; 1.1: persistent; 2: multiplexed streams on one TCP. 
+e) 1xx info (100), 2xx success (200), 3xx redirect (301), 4xx client (404), 5xx server (500).
+f) SMTP push; retrieval via POP3/IMAP.
+g) POP3: download/(often) delete, local state; IMAP: server state, sync across devices.
+h) SrcPort, DstPort (demux), Length, Checksum (error detect).
+i) Flow ctrl protects receiver; Congestion ctrl protects network.
+j) Must wait one RTT per pkt ⇒ poor utilization when BDP is large.
+
+2) PERFORMANCE I
+Given t_s = P/R = 100 / 1e6 = 0.0001 s = 0.1 ms per hop; t_p = 0.05 ms per hop; N = 10.
+First-packet latency = (t_s+t_p)L1 + (t_s+t_p)L2 = (0.1+0.05)*2 = 0.3 ms.
+Steady-state drain = (N-1)*t_s_bottleneck = 9*0.1 = 0.9 ms.
+2.a) Total = 0.3 + 0.9 = 1.2 ms.
+2.b) Add N*t_h overall = 10*0.05 = 0.5 ms ⇒ 1.2 + 0.5 = 1.7 ms.
+2.c) Message: serialize whole F per hop + both propagations.
+F/R per hop = 1000/1e6 = 1.0 ms. Total = 1.0 + 1.0 + 0.05 + 0.05 = 2.1 ms.
+2.d) Circuit: setup 0.05 + F/R once (1.0) + propagations 0.1 ⇒ 1.15 ms.
+
+3) HTTP
+File sizes: base 90KB, 6×30KB=180KB ⇒ total 270KB. Link 90 Mb/s ⇒ 11.25 MB/s ⇒ tx(270KB) ≈ 24 ms.
+RTT=40ms; handshake cost if used: +1 RTT.
+3.a) HTTP/1.0 non-persistent: typically 1 TCP per object.
+Time ≈ (handshake+req/resp) per object + tx. Minimal model: 6+1 connections ⇒ ≈ 7*(1 RTT for request/first byte + 1 RTT handshake) + tx ≈ 7*80ms + 24ms ≈ 584ms. (Accept variants if justified; main idea: many RTTs.)
+3.b) HTTP/1.1 persistent (no pipelining): one handshake, sequential objects: ≈ 1 RTT handshake + 7*(1 RTT app) + tx ≈ 40 + 280 + 24 = 344 ms.
+3.c) HTTP/2 multiplexed: one handshake + one app RTT + tx ≈ 40 + 40 + 24 = 104 ms.
+
+4) DNS (iterative)
+a) ROOT: Authority = NS for .edu (TLD); Additional = glue A/AAAA for those NS.
+b) .EDU: Authority = NS for rutgers.edu; Additional = glue for those NS.
+c) Authoritative for rutgers.edu: Answer = A (and/or AAAA) for x.cs.rutgers.edu.
+d) If TLD NS + glue cached and fresh, skip contacting root; go straight to .EDU.
+e) TTL 600s: after 5 min (300s) still cached ⇒ immediate answer; after 15 min (900s) expired ⇒ must re-resolve.
+
+5) Reliability/windows
+Let N = F/L = 1e6/1e3 = 1000 pkts.
+5.a) Stop-and-Wait cycle ≈ RTT per pkt ⇒ T ≈ N*RTT = 1000*0.1 s = 100 s (more exact adds tiny tx and first/last halves).
+5.b) Fixed window W=20: Throughput ≈ (W*L)/RTT = 20kbit/0.1s = 200 kb/s ⇒ T ≈ F/throughput = 1e6 / 2e5 = 5 s (add ~RTT/2 finish ⇒ ≈ 5.05 s).
+5.c) Slow start: Need 2^k − 1 ≥ 1000 ⇒ k=10 (1023). Time ≈ k*RTT + RTT/2 ≈ 1.05 s.
+5.d) If W < BDP/L, the pipe can’t stay full ⇒ link idle between flights.
+
+Theory — UDP
+A) 4-bit words of D: 0011(3), 0101(5), 1010(10=A).
+Sum = 3 + 5 + A = 0x12. Wraparound: 0x2 with carry 1 ⇒ 0x2 + 1 = 0x3. One’s complement ⇒ 0xC.
+Check: 0x3 + 0xC = 0xF (all ones) ⇒ OK.
+B) Examples: (i) Live media/voice: app tolerates loss; adds FEC/concealment. (ii) DNS: short request/response; reliability via retry; ordering irrelevant.

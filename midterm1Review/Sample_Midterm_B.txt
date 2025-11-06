@@ -1,0 +1,55 @@
+Rutgers CS 352 — Internet Technology
+Sample Midterm B
+Format: 5 multipart problems + 1 theory question. Closed book / notes unless stated. Show work.
+Topics: Switching & measurements; DNS; HTTP/SMTP/IMAP/POP3; Transport issues (loss/corruption/flow/congestion);
+UDP; Reliable transport (Stop-and-Wait, GBN, SR).
+(Study sources: W1&2_Introduction_Network_Measurements.pdf; W345_APPLAYER_DNS_HTTP_SMTP.pdf;
+W567-TRANSPORTLAYER-UDP-TCP-1.pdf — use these to review definitions, timing formulas, DNS message layout,
+HTTP versions, SMTP dialogue, UDP checksum, and GBN/SR mechanics.)
+
+
+Problem 1 — QUICKIES (10×3 pts)
+a) Define “store-and-forward” at a router.
+b) Which DNS sections (Answer/Authority/Additional) carry NS and glue? Explain glue.
+c) Give an example of an HTTP request line and three common request headers.
+d) Two differences between HTTP/1.1 and HTTP/2.
+e) Name three SMTP commands and their meanings.
+f) POP3 “download-and-delete” vs “leave on server”: impact on multi-device use.
+g) What problems do sequence numbers solve? What about checksums?
+h) UDP: list two benefits and two drawbacks.
+i) GBN receiver policy vs SR receiver policy for out-of-order packets.
+j) Define bandwidth–delay product and why it matters.
+
+Problem 2 — PERFORMANCE (heterogeneous links)
+A—R—B, store-and-forward.
+R1 = 2.0×10^6 B/s, R2 = 0.5×10^6 B/s. t_p each link = 0.04 ms.
+Packets of 200 B; total F = 2000 B.
+
+2.a) Packet switching: total time (no per-packet processing). Identify the bottleneck.
+2.b) Same but add per-packet processing t_h = 0.02 ms overall.
+2.c) Message switching: total time.
+
+Problem 3 — HTTP OBJECT BUNDLE
+RTT = 30 ms. Link symmetric 60 Mb/s.
+Base 120 KB; 9 images each 40 KB.
+
+3.a) HTTP/1.0 with at most 2 parallel TCP connections.
+3.b) HTTP/1.1 persistent without pipelining.
+3.c) HTTP/2 multiplexed. State assumptions; show timing components.
+
+Problem 4 — DNS AUTHORITATIVE SETS
+For host y.princeton.edu (iterative resolution):
+4.a) What does root return? (.edu NS + glue) Identify which section each record appears in.
+4.b) What does .edu return? (princeton.edu NS + glue). Same ask.
+4.c) What does authoritative for princeton.edu return? (A/AAAA in Answer).
+4.d) If an attacker poisons the cache to change a glue A record, what breaks and why do TTLs matter? One paragraph.
+
+Problem 5 — UDP & RELIABLE PROTOCOLS
+5.a) Compute the 4-bit checksum for 12-bit D = 0101 0011 0010.
+    Verify at receiver by summing with checksum: do we get all 1s?
+5.b) On a path with RTT=120 ms, BW=∞, Stop-and-Wait with L=1000 bits sends N=500 pkts. Approx total time.
+5.c) Same path but window W=15; give throughput and time. 
+5.d) GBN with window N=5: three losses occur for packets #7, #9, #11 within one window. Which packets are retransmitted?
+5.e) SR in same scenario: which packets are retransmitted? What does receiver buffer?
+
+THEORY — When is message switching better than packet switching? Give a scenario and justify in ≤8 lines.

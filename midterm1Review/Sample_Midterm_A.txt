@@ -1,0 +1,65 @@
+Rutgers CS 352 — Internet Technology
+Sample Midterm A
+Format: 5 multipart problems + 1 theory question. Closed book / notes unless stated. Show work.
+Topics: Switching & measurements; DNS; HTTP/SMTP/IMAP/POP3; Transport issues (loss/corruption/flow/congestion);
+UDP; Reliable transport (Stop-and-Wait, GBN, SR).
+(Study sources: W1&2_Introduction_Network_Measurements.pdf; W345_APPLAYER_DNS_HTTP_SMTP.pdf;
+W567-TRANSPORTLAYER-UDP-TCP-1.pdf — use these to review definitions, timing formulas, DNS message layout,
+HTTP versions, SMTP dialogue, UDP checksum, and GBN/SR mechanics.)
+
+
+Problem 1 — QUICKIES (10×3 pts = 30)
+Answer in ≤2 lines.
+a) Define transmission vs propagation delay. Which depends on link rate?
+b) Circuit vs Message vs Packet switching: 1 pro and 1 con of each.
+c) What does an NS record mean vs an A/AAAA record?
+d) HTTP/1.0 vs HTTP/1.1 vs HTTP/2 in one sentence each (focus on connections/streams).
+e) Give the 5 classes of HTTP status codes and one common example in each.
+f) In SMTP, is server-to-server mail push or pull? Which protocol retrieves mail for a user?
+g) POP3 vs IMAP: state layout and typical user experience difference.
+h) Name four UDP header fields and what they do.
+i) Define flow control vs congestion control (who is being protected?).
+j) Stop-and-Wait: why is utilization poor on high BDP links?
+
+Problem 2 — PERFORMANCE I (A—R—B store-and-forward switch)
+• Both links R1 = R2 = 1.0×10^6 Bytes/s.  Propagation per link t_p = 0.05 ms.
+• File size F = 1000 Bytes.  Packet payload P = 100 Bytes (so N = 10 packets).
+• The router must receive an entire packet before forwarding (classic store-and-forward).
+
+2.a) Packet switching with NO per-packet processing. Compute total time end-to-end.
+2.b) Same as (a), but there is per-packet router processing t_h = 0.05 ms (once per packet overall).
+2.c) Message switching (whole message per hop), same R1,R2,t_p; compute total time.
+2.d) Circuit switching with call setup 0.05 ms; compute total time.
+
+Problem 3 — HTTP TIMING & CONNECTIONS
+Assume RTT = 40 ms, object sizes negligible compared to RTT unless noted.
+A page has: one base HTML (90 KB) and M = 6 embedded objects (each 30 KB).
+Link from client to server is 90 Mb/s in both directions.
+
+3.a) HTTP/1.0 (non-persistent), no parallel connections. Time to get the full page.
+3.b) HTTP/1.1 persistent, no pipelining (send next after prior response). Time for full page.
+3.c) HTTP/2 over one TCP (multiplexed). Time for full page.
+(State your timing model clearly; count handshakes where relevant.)
+
+Problem 4 — DNS (ITERATIVE RESOLUTION)
+Resolver performs an ITERATIVE lookup for host x.cs.rutgers.edu.
+4.a) What does the ROOT return (sections and record types)?
+4.b) What does the .EDU TLD return?
+4.c) What does the rutgers.edu authoritative server finally return?
+4.d) If the resolver cache already has TLD NS + glue (fresh), which steps are skipped? Why?
+4.e) If the A record for x.cs.rutgers.edu has TTL 600s and we query again after 5 minutes, what happens? After 15 minutes?
+
+Problem 5 — TRANSPORT RELIABILITY / WINDOWS
+Consider a one-way path with finite RTT = 100 ms. Unless noted, serialization time is negligible.
+Packet payload L = 1000 bits.
+
+5.a) Stop-and-Wait throughput and total time to send F = 1,000,000 bits.
+5.b) Window-based sending with fixed W = 20 packets (BW = ∞). Give throughput and time for F above.
+5.c) Exponential growth per RTT (1,2,4,8,…) until done (BW = ∞). Find number of RTTs to send N packets and total time.
+5.d) Explain (one sentence) why a too-small window underutilizes a high-BDP path.
+
+THEORY — UDP CHECKSUM & WHEN TO USE UDP (10 pts)
+A) Compute the 4-bit UDP-style checksum (1’s complement over 4-bit words) for the 12-bit data:
+   D = 0011 0101 1010. Show the wraparound if any and give the final checksum.
+   Then verify that D + checksum gives all 1s at the receiver.
+B) Name two application scenarios where UDP is preferable to TCP and explain (1–2 lines each) how the app handles reliability/ordering if needed.

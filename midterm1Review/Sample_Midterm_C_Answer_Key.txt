@@ -1,0 +1,17 @@
+Answer Key — Sample Midterm C (sketch)
+
+1) a) RD=recursion desired; RA=recursion available. b) Set-Cookie, Cookie, client store, server DB. c) +fewer handshakes, +better reuse; −conn mgmt. d) 220 ready, 250 OK, 354 start data, 221 closing. e) {IP src,dst, port src,dst}. f) ACK N means “got < N”; robust to losses; fewer ACKs. g) Buffer overflow, drop for policy/errors. h) Low latency/no handshake; app-level control. i) Glue = A/AAAA for NS in Additional; root doesn’t know leaf A. j) Avoids seq number ambiguity after wraparound.
+
+2) Three hops, t_s=150/1.5e6=0.1 ms per hop; t_p=0.03 per hop; N=F/P=10.
+First pkt = 3*(0.1+0.03)=0.39 ms; Drain = 9*0.1=0.9 ms ⇒ Total = 1.29 ms.
+2.b) R2 bottleneck t_s=150/5e5=0.3 ms ⇒ First = 0.1+0.03 + 0.1+0.03 + 0.3+0.03 = 0.59 ms; Drain = 9*0.3=2.7 ms ⇒ 3.29 ms.
+
+3) Size = 60 + 20 + 40 + 8*25 = 320 KB; 100 Mb/s ≈ 12.5 MB/s ⇒ tx ≈ 25.6 ms.
+3.a) Up to 6 in parallel: do base first (needs 1 handshake + 1 app RTT); then batches of up to 6. Roughly: handshake 50 + first app 50 + two more app rounds 2*50 = 200 ms + tx 25.6 ≈ 225.6 ms.
+3.b) h2: 1 handshake + 1 app RTT + tx ≈ 50 + 50 + 25.6 = 125.6 ms.
+
+4) ROOT: Authority NS for .edu; Additional glue A/AAAA for those NS; Answer empty. .EDU: Authority NS for example.edu; Additional glue; Answer empty. example.edu auth: Answer A/AAAA for z.example.edu. TTLs let resolver reuse cached NS/glue and the A for z during TTL window.
+
+5) a) S&W ≈ N*RTT = 400*0.08 = 32 s. b) W=32: Throughput ≈ (32k)/0.08 = 400 kb/s ⇒ T ≈ 1e6/4e5 = 2.5 s (+~RTT/2). c) GBN: retransmit from first loss onward within window; SR: retransmit only {13,17}; buffer OOO until filled.
+
+Theory: Diagram should show UA↔Mail Server via IMAP (read) or HTTP (webmail), and MailServer(SMTP client)→SMTP server at recipient over SMTP; recipient UA retrieves via IMAP/POP3 or views via HTTP webmail.

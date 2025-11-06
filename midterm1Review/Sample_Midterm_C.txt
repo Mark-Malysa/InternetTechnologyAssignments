@@ -1,0 +1,47 @@
+Rutgers CS 352 — Internet Technology
+Sample Midterm C
+Format: 5 multipart problems + 1 theory question. Closed book / notes unless stated. Show work.
+Topics: Switching & measurements; DNS; HTTP/SMTP/IMAP/POP3; Transport issues (loss/corruption/flow/congestion);
+UDP; Reliable transport (Stop-and-Wait, GBN, SR).
+(Study sources: W1&2_Introduction_Network_Measurements.pdf; W345_APPLAYER_DNS_HTTP_SMTP.pdf;
+W567-TRANSPORTLAYER-UDP-TCP-1.pdf — use these to review definitions, timing formulas, DNS message layout,
+HTTP versions, SMTP dialogue, UDP checksum, and GBN/SR mechanics.)
+
+
+Problem 1 — DEFINITIONS / CONSEQUENCES (10×3 pts)
+a) Give the DNS header flags RD and RA meanings.
+b) What is cookie state in HTTP? List the four participants.
+c) Persistent HTTP: name two benefits and one operational tradeoff.
+d) SMTP numeric replies: what do 220, 250, 354, 221 mean?
+e) What fields make TCP/UDP demultiplexing possible?
+f) Define cumulative ACK. Why does TCP use it?
+g) Give two causes of packet loss in routers.
+h) Give two reasons an application would choose UDP.
+i) What is “glue” again, and why can’t root give you the final A?
+j) One sentence: why SR window ≤ half the sequence space.
+
+Problem 2 — PIPELINE WITH THREE HOPS
+S—R1—R2—D (three store-and-forward hops). All links 1.5×10^6 B/s; t_p per hop 0.03 ms.
+P=150 B; file F=1500 B. No per-packet processing.
+
+2.a) Compute total time end-to-end.
+2.b) Now R2’s link rate drops to 0.5×10^6 B/s. Recompute and identify the bottleneck.
+
+Problem 3 — MIXED HTTP OBJECTS
+RTT = 50 ms; symmetric 100 Mb/s. Base 60 KB, CSS 20 KB, JS 40 KB, 8 images 25 KB each.
+Assume browsers on HTTP/1.1 can fetch up to 6 parallel objects per host (connection coalescing off).
+3.a) HTTP/1.1 persistent with up to 6 parallel connections, no pipelining. Estimate total time.
+3.b) HTTP/2 over one TCP. Estimate time.
+
+Problem 4 — DNS “WHAT’S IN WHICH SECTION?”
+During an iterative resolution for z.example.edu:
+4.a) Name exactly which records (types) you expect in Answer, Authority, Additional from ROOT, from .EDU, and from example.edu’s authoritative server.
+4.b) Explain how TTL and caching reduce future queries for the same name and which entries are likely cached.
+
+Problem 5 — UDP + GBN/SR TIMELINES
+RTT=80 ms, BW=∞, L=1000 bits.
+5.a) Stop-and-Wait: time to send N=400 packets.
+5.b) Window W=32: give throughput and total time.
+5.c) Losses at pkts (13, 17) within one window. Draw/describe which retransmissions occur under GBN vs SR and how ACKs advance.
+
+THEORY — Email stack: Compare SMTP vs IMAP vs HTTP webmail in one cohesive diagram (text OK). Explain who speaks to whom and over which protocol in 8–10 lines.
