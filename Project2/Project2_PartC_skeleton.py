@@ -2,6 +2,7 @@ import socket
 import struct
 import random
 import json
+import sys
 
 # Example query spec as JSON
 dns_query_spec = {
@@ -81,8 +82,7 @@ def parse_rr(data, offset):
     rdata = data[offset:offset+rdlength]
     offset += rdlength
 
-    # Parse RDATA based on type
-    rdata_start = offset - rdlength  # Start of rdata in original data
+    rdata_start = offset - rdlength
     ip = None
     nsname = None
     rtype = None
@@ -119,7 +119,9 @@ def parse_response(data):
     response["arcount"] = ARCOUNT
 
     offset = 12
-    # Skip questions (with compression handling)
+    
+    # Skip questions
+    
     for _ in range(QDCOUNT):
         while data[offset] != 0:
             if (data[offset] & 0xC0) == 0xC0:
@@ -160,20 +162,16 @@ def dns_query(query_spec, server=("1.1.1.1", 53), use_tcp=False):
     query = build_query(query_spec)
     
     if use_tcp:
-        # TCP query - prefix with 2-byte length
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
         sock.connect(server)
-        # DNS over TCP requires a 2-byte length prefix
         query_with_len = struct.pack("!H", len(query)) + query
         sock.sendall(query_with_len)
-        # Read the 2-byte length prefix
         length_data = sock.recv(2)
         if len(length_data) < 2:
             sock.close()
-            return {"tc": 0, "rcode": 2}  # Server failure
+            return {"tc": 0, "rcode": 2}  
         msg_len = struct.unpack("!H", length_data)[0]
-        # Read the full message
         data = b""
         while len(data) < msg_len:
             chunk = sock.recv(msg_len - len(data))
@@ -182,7 +180,7 @@ def dns_query(query_spec, server=("1.1.1.1", 53), use_tcp=False):
             data += chunk
         sock.close()
     else:
-        # UDP query
+        # if not tcp its udp
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(5)
         sock.sendto(query, server)
@@ -194,47 +192,39 @@ def dns_query(query_spec, server=("1.1.1.1", 53), use_tcp=False):
 
 
 def iterative_resolve(query_spec):
-    # Start with a root server
-    servers = ["198.41.0.4"]  # a.root-servers.net
+    servers = ["198.41.0.4"]  # this si a.root-servers.net
     print("Starting iterative resolution from root servers:", servers)
 
     while servers: 
         server_ip = servers.pop(0)
         print(f"Querying server: {server_ip}")
         
-        # Set RD=0 for iterative (non-recursive) query
         query_spec["rd"] = 0
         response = dns_query(query_spec, server=(server_ip, 53))
 
-        # Check for truncation - retry with TCP
         if response["tc"] == 1:
             print(f"  Response truncated (TC=1), retrying with TCP...")
             response = dns_query(query_spec, server=(server_ip, 53), use_tcp=True)
             if response["tc"] == 1:
                 return {"error": "Truncated response even over TCP"}
         
-        # For iterative queries, we don't check RA (recursion available)
-        # because we're not asking for recursion (RD=0)
-        
-        # Check for DNS error codes
+        # confirm we aren't getting error code
         if response["rcode"] != 0:
             return {"error": f"DNS error - RCODE {response['rcode']}"}
         
-        # If we got an answer, we're done!
+        # found answer so finish
         if response["answers"]:
             print(f"Got answer: {response['answers']}")
             return response["answers"]
         
-        # No answer, so we need to follow referrals
         if response["authorities"]:
-            # Look for glue records in additional section
+            # check fir glue records
             found_glue = False
             for auth in response["authorities"]:
                 if auth["rtype"] == "NS" and auth["nsname"]:
                     ns_hostname = auth["nsname"]
                     print(f"Looking for glue record for NS: {ns_hostname}")
                     
-                    # Search for corresponding A/AAAA record in additionals
                     for add in response["additionals"]:
                         if add["hostname"] == ns_hostname and add["ip"]:
                             print(f"Found glue record: {ns_hostname} -> {add['ip']}")
@@ -254,17 +244,14 @@ def iterative_resolve(query_spec):
 
 
 
-
+# switched up for debugging / testing purposes. still preforms the same functionally
 if __name__ == "__main__":
-    # Read questions from Input.json or command-line argument
-    import sys
     input_file = sys.argv[1] if len(sys.argv) > 1 else "Input.json"
     with open(input_file, "r") as f:
         questions = json.load(f)
     
     results = []
     
-    # Process each question
     for q in questions:
         print(f"\n{'='*60}")
         print(f"Resolving {q['qname']} (type {q['qtype']})...")
@@ -285,10 +272,8 @@ if __name__ == "__main__":
             ]
         }
         
-        # Perform iterative resolution
         response = iterative_resolve(dns_query_spec)
         
-        # Create result with original question
         result = {
             "question": q,
             "answers": response
@@ -299,7 +284,7 @@ if __name__ == "__main__":
         print(json.dumps(result, indent=2))
         print("-" * 60)
     
-    # Write all results to output file
+    # quick output so we don't have to keep running
     with open("output_partC.json", "w") as f:
         json.dump(results, f, indent=2)
     
