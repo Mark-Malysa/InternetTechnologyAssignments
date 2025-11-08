@@ -3,7 +3,7 @@ import socket, struct, time
 
 # ===================== CONFIG (EDIT HOST/PORT) =====================
 SERVER_HOST = '127.0.0.1'   # server IP or hostname
-ASSIGNED_PORT = 30077       # <-- keep your assigned UDP port
+ASSIGNED_PORT = 30069       # <-- keep your assigned UDP port
 SERVER = (SERVER_HOST, ASSIGNED_PORT)
 # ==================================================================
 

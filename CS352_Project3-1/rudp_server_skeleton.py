@@ -2,7 +2,7 @@
 import socket, struct, time, random
 
 # ===================== CONFIG (EDIT YOUR PORT) =====================
-ASSIGNED_PORT = 30077  # <-- keep your assigned UDP port
+ASSIGNED_PORT = 30069  # <-- keep your assigned UDP port
 # ==================================================================
 
 # --- Protocol type codes (1 byte) ---
