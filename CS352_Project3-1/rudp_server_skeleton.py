@@ -61,11 +61,12 @@ def main():
 
         # ============ PHASE 2: DATA =================
         if tp == DATA:
-            # Required: insert a random ACK delay to induce client timeouts/retries
-            delay_ms = random.randint(100, 1000)
-            time.sleep(delay_ms / 1000.0)
-
             if seq == expect_seq:
+                # In-order packet: apply random ACK delay to induce client timeouts/retries
+                # Required: insert a random ACK delay before replying (per project requirements)
+                delay_ms = random.randint(100, 1000)
+                time.sleep(delay_ms / 1000.0)
+                
                 # "Deliver" payload (optional: print so you can see ordering)
                 try:
                     text = pl.decode(errors='replace')
@@ -77,7 +78,8 @@ def main():
                 sock.sendto(pack_msg(DATA_ACK, seq, b''), client_addr)
                 expect_seq += 1
             else:
-                # Out-of-order (likely duplicate of an already-delivered seq)
+                # Out-of-order (likely duplicate/retransmission): handle immediately without delay
+                # This ensures reliability - retransmissions should be ACKed quickly
                 # Re-ACK the last in-order seq (expect_seq-1), keeping stop-and-wait happy
                 ack_seq = expect_seq - 1 if expect_seq > 0 else 0
                 print(f'[SERVER] out-of-order DATA seq={seq} (expect {expect_seq}); re-ACK {ack_seq}')

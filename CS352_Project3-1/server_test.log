@@ -1,0 +1,20 @@
+[SERVER] Listening on 0.0.0.0:30069 (UDP)
+[SERVER] got SYN from ('127.0.0.1', 58103)
+[SERVER] handshake complete
+[SERVER] DATA seq=0 (delivered, len=200)
+[SERVER] out-of-order DATA seq=0 (expect 1); re-ACK 0
+[SERVER] DATA seq=1 (delivered, len=200)
+[SERVER] out-of-order DATA seq=1 (expect 2); re-ACK 1
+[SERVER] DATA seq=2 (delivered, len=200)
+[SERVER] out-of-order DATA seq=2 (expect 3); re-ACK 2
+[SERVER] out-of-order DATA seq=2 (expect 3); re-ACK 2
+[SERVER] DATA seq=3 (delivered, len=200)
+[SERVER] out-of-order DATA seq=3 (expect 4); re-ACK 3
+[SERVER] out-of-order DATA seq=3 (expect 4); re-ACK 3
+[SERVER] out-of-order DATA seq=3 (expect 4); re-ACK 3
+[SERVER] DATA seq=4 (delivered, len=161)
+[SERVER] out-of-order DATA seq=4 (expect 5); re-ACK 4
+[SERVER] out-of-order DATA seq=4 (expect 5); re-ACK 4
+[SERVER] out-of-order DATA seq=4 (expect 5); re-ACK 4
+[SERVER] out-of-order DATA seq=4 (expect 5); re-ACK 4
+[SERVER] FIN received, closing
