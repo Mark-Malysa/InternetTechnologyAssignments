@@ -53,48 +53,36 @@ Copy the content below into a file named `report.tex` (or similar) and fill in t
 
 \section*{Part B: Wireshark Analysis}
 
-\textbf{Destination used:} www.princeton.edu
+\textbf{Destination used:} www.princeton.edu (IP observed: 104.18.5.101)
 
 \begin{enumerate}
     \item \textbf{What is the value of the protocol field in the IP layer? Which protocol does it indicate? (Answer with reference to first request and response packet in your trace)}
     
-    \textit{Answer:} 
-    % TODO: Fill in answer here. 
-    % Example: In the request packet (UDP probe), the protocol field is 17 (UDP). In the response packet (ICMP error), the outer IP header has protocol 1 (ICMP).
+    \textit{Answer:} Request (first UDP probe): protocol field = 17 (UDP). Response (ICMP Time Exceeded): outer IP protocol field = 1 (ICMP).
     
     \item \textbf{How many IP headers do you observe in the ICMP response packet?}
     
-    \textit{Answer:}
-    % TODO: Fill in answer here. 
-    % Hint: An ICMP error message typically contains the IP header of the original packet that caused the error.
+    \textit{Answer:} Two. The outer IP header carries the ICMP Time Exceeded; the ICMP payload includes the original IP header of the UDP probe.
     
     \item \textbf{What is the value of the type field and code field in the ICMP packet received from the router? (Answer with reference to first request and response packet in your trace)}
     
-    \textit{Answer:}
-    % TODO: Fill in answer here.
-    % Example: Type 11 (Time-to-live exceeded), Code 0 (Time to live exceeded in transit).
+    \textit{Answer:} Type = 11 (Time Exceeded), Code = 0 (TTL exceeded in transit). Source in capture: 128.6.13.1 (first hop).
     
     \item \textbf{What is the value of the type field and code field in the ICMP packet received from the destination?}
     
-    \textit{Answer:}
-    % TODO: Fill in answer here.
-    % Example: Type 3 (Destination Unreachable), Code 3 (Port Unreachable).
+    \textit{Answer:} Not visible in the saved capture (no ICMP type 3 observed), but traceroute completion implies the expected ICMP Destination Unreachable, Code 3 (Port Unreachable) from 104.18.5.101 at the final hop.
     
     \item \textbf{How many routers were present in the path to the destination?}
     
-    \textit{Answer:}
-    % TODO: Fill in answer here. Count the number of unique hops before the destination.
+    \textit{Answer:} 11 routers; destination reached on hop 12.
     
     \item \textbf{What is the TTL in the packet delivered to the destination?}
     
-    \textit{Answer:}
-    % TODO: Fill in answer here. This corresponds to the hop count at which the destination was reached.
+    \textit{Answer:} 12 (the hop count when the destination replied).
     
     \item \textbf{How does source and destination IP in different layers of IP in ICMP packet relate to your machine (ilab), your destination machine and intermediate router?}
     
-    \textit{Answer:}
-    % TODO: Fill in answer here.
-    % Hint: Discuss the outer IP header (Source: Router, Dest: You) and the inner IP header (Source: You, Dest: Target) encapsulated within the ICMP payload.
+    \textit{Answer:} For router Time Exceeded: outer IP src = router, dst = your host; inner (quoted) IP src = your host, dst = 104.18.5.101. For the expected destination Port Unreachable: outer IP src = 104.18.5.101, dst = your host; inner IP src = your host, dst = 104.18.5.101 (the original UDP probe).
     
 \end{enumerate}
 
