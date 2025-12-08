@@ -22,6 +22,12 @@ ICMP_TIME_EXCEEDED = 11
 ICMP_DEST_UNREACHABLE = 3
 ICMP_ECHO_REPLY = 0
 
+# Define IP_RECVERR if not available (Linux specific, usually 11)
+try:
+    IP_RECVERR = socket.IP_RECVERR
+except AttributeError:
+    IP_RECVERR = 11
+
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
@@ -99,6 +105,19 @@ class TracerouteNoRoot:
             # 2. Enable extended reliable error message passing using IP_RECVERR to receive ICMP errors     #
             #################################################################################################
 
+            # Set TTL
+            try:
+                udp_socket.setsockopt(socket.IPPROTO_IP, socket.IP_TTL, ttl)
+            except OSError as e:
+                raise RuntimeError(f"Failed to set IP_TTL: {e}")
+            
+            # Set IP_RECVERR to enable receiving ICMP errors via error queue
+            try:
+                udp_socket.setsockopt(socket.IPPROTO_IP, IP_RECVERR, 1)
+            except OSError as e:
+                # On non-Linux systems, this will fail
+                udp_socket.close()
+                return (None, None, None, None)
             
             # Set timeout
             udp_socket.settimeout(self.timeout)
@@ -146,7 +165,8 @@ class TracerouteNoRoot:
                         #     __u32 ee_info;
                         #     __u32 ee_data;
                         # };
-
+                        # Total size of sock_extended_err is 16 bytes.
+                        
                         ##########################################################################
                         # TODO extract ee_origin and ee_type from message                        #
                         # Extract router ip from cmsg_data. The address is in sockaddr_in format #
@@ -157,6 +177,23 @@ class TracerouteNoRoot:
                         # copy icmp type and code into icmp_type, icmp_code                      #
                         #########################################################################
 
+                        # Parse sock_extended_err structure (16 bytes)
+                        # struct layout: ee_errno(4), ee_origin(1), ee_type(1), ee_code(1), ee_pad(1), ee_info(4), ee_data(4)
+                        if len(cmsg_data) >= 16:
+                            # Extract ee_type (offset 4+1=5) and ee_code (offset 4+2=6)
+                            ee_type = cmsg_data[5]
+                            ee_code = cmsg_data[6]
+                            
+                            icmp_type = ee_type
+                            icmp_code = ee_code
+                            
+                            # Extract sockaddr_in which follows sock_extended_err (starts at offset 16)
+                            # sockaddr_in structure: sin_family(2), sin_port(2), sin_addr(4), padding(8)
+                            # IP address (sin_addr) is at offset 16 + 4 = 20
+                            if len(cmsg_data) >= 24:
+                                ip_bytes = cmsg_data[20:24]
+                                error_addr = socket.inet_ntoa(ip_bytes)
+                            
                 # If we didn't get address from ancdata, try from addr parameter
                 if error_addr is None and addr:
                     error_addr = addr[0] if addr else None
@@ -257,6 +294,21 @@ class TracerouteNoRoot:
         # and icmp_code is 'port unreacahble'. if so exit from the loop. otherwise run the loop until max_hops. #
         #########################################################################################################
         
+        for ttl in range(1, self.max_hops + 1):
+            hop_info = self.probe_hop(ttl)
+            print(self.format_hop_output(hop_info))
+            
+            # Check if destination reached
+            # We look for the destination IP in the results, and confirm it replied with Port Unreachable
+            for probe in hop_info['probes']:
+                if probe['ip'] == self.dest_ip:
+                    # Check for ICMP Dest Unreachable (3) and Port Unreachable (3)
+                    if probe['type'] == ICMP_DEST_UNREACHABLE and probe['code'] == 3:
+                        reached_destination = True
+                        break
+            
+            if reached_destination:
+                break
         
         if not reached_destination:
             print(f"\nDestination not reached within {self.max_hops} hops")

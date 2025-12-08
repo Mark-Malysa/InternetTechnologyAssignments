@@ -1,0 +1,96 @@
+Project 4 Report
+================
+
+Part B: Wireshark/TShark Instructions
+-------------------------------------
+1. Install Wireshark or TShark if not already installed.
+2. Open Wireshark.
+3. Select the network interface you are using to connect to the internet (e.g., eth0, wlan0, en0).
+4. In the filter bar, enter the following filter to capture only relevant traffic:
+   icmp || ip.addr == <destination_ip>
+   
+   (Replace <destination_ip> with the resolved IP of www.princeton.edu or your target. You can find this by running `ping www.princeton.edu` or looking at the traceroute output)
+   
+5. Start the capture (Blue fin icon).
+6. Run your traceroute program:
+   python3 traceroute_skeleton.py
+   
+   **IMPORTANT**: The provided implementation uses `IP_RECVERR` which is a Linux-specific socket option. You must run this code on a Linux machine (e.g., an Ubuntu VM, WSL, or an ilab machine). It will NOT work correctly on macOS or Windows natively.
+   
+7. Wait for the traceroute to complete.
+8. Stop the capture (Red square icon).
+9. Save the capture file (File > Save As) as 'traceroute.pcapng'.
+
+To analyze the capture for the questions:
+- Locate the first UDP packet sent by your computer. This is the first probe (TTL=1).
+- Locate the corresponding ICMP response (Type 11: Time-to-live exceeded) from the first router.
+- Use these packets to answer the questions about IP headers, ICMP types/codes, etc.
+
+LaTeX Template for Part B Answers
+---------------------------------
+Copy the content below into a file named `report.tex` (or similar) and fill in the answers where indicated.
+
+```latex
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\title{Internet Technology - Project 4 Report}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Part B: Wireshark Analysis}
+
+\textbf{Destination used:} www.princeton.edu
+
+\begin{enumerate}
+    \item \textbf{What is the value of the protocol field in the IP layer? Which protocol does it indicate? (Answer with reference to first request and response packet in your trace)}
+    
+    \textit{Answer:} 
+    % TODO: Fill in answer here. 
+    % Example: In the request packet (UDP probe), the protocol field is 17 (UDP). In the response packet (ICMP error), the outer IP header has protocol 1 (ICMP).
+    
+    \item \textbf{How many IP headers do you observe in the ICMP response packet?}
+    
+    \textit{Answer:}
+    % TODO: Fill in answer here. 
+    % Hint: An ICMP error message typically contains the IP header of the original packet that caused the error.
+    
+    \item \textbf{What is the value of the type field and code field in the ICMP packet received from the router? (Answer with reference to first request and response packet in your trace)}
+    
+    \textit{Answer:}
+    % TODO: Fill in answer here.
+    % Example: Type 11 (Time-to-live exceeded), Code 0 (Time to live exceeded in transit).
+    
+    \item \textbf{What is the value of the type field and code field in the ICMP packet received from the destination?}
+    
+    \textit{Answer:}
+    % TODO: Fill in answer here.
+    % Example: Type 3 (Destination Unreachable), Code 3 (Port Unreachable).
+    
+    \item \textbf{How many routers were present in the path to the destination?}
+    
+    \textit{Answer:}
+    % TODO: Fill in answer here. Count the number of unique hops before the destination.
+    
+    \item \textbf{What is the TTL in the packet delivered to the destination?}
+    
+    \textit{Answer:}
+    % TODO: Fill in answer here. This corresponds to the hop count at which the destination was reached.
+    
+    \item \textbf{How does source and destination IP in different layers of IP in ICMP packet relate to your machine (ilab), your destination machine and intermediate router?}
+    
+    \textit{Answer:}
+    % TODO: Fill in answer here.
+    % Hint: Discuss the outer IP header (Source: Router, Dest: You) and the inner IP header (Source: You, Dest: Target) encapsulated within the ICMP payload.
+    
+\end{enumerate}
+
+\end{document}
+```
+
