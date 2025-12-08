@@ -8,7 +8,7 @@ import os
 # CONFIGURATION
 # ============================================================================
 
-DEFAULT_PORT = 33434
+DEFAULT_PORT = 30069
 MAX_HOPS = 30
 TIMEOUT = 2.0
 PROBES_PER_HOP = 3
