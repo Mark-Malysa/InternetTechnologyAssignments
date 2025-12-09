@@ -3,15 +3,15 @@ Project 4 Report
 
 Part B: Wireshark/TShark Instructions (guided by your sample run)
 -----------------------------------------------------------------
-Use the actual destination IP you saw in your trace. From your ilab run:
+Use the actual destination IP you saw in your trace. From the latest ilab run:
 - Destination hostname: www.princeton.edu
-- Destination IP observed: 104.18.5.101 (Cloudflare front-end for Princeton)
+- Destination IP observed: 104.18.4.101 (Cloudflare front-end for Princeton)
 
 Capture steps (Wireshark GUI):
 1) Start Wireshark on the ilab machine. Pick the interface that has internet access (often `eth0` on ilab; if unsure, look for the one with increasing packet counters).
 2) Set a display filter to see only relevant traffic:  
-   `icmp or ip.addr == 104.18.5.101`  
-   (If your trace shows a different destination IP, replace 104.18.5.101 with that IP. Using the literal IP avoids name-resolution mismatches.)
+   `icmp or ip.addr == 104.18.4.101`  
+   (If your trace shows a different destination IP, replace 104.18.4.101 with that IP. Using the literal IP avoids name-resolution mismatches.)
 3) Click Start (blue fin icon) to begin capturing **before** running traceroute.
 4) In a terminal, run:  
    `python3 traceroute_skeleton.py`
@@ -27,11 +27,11 @@ sudo tshark -i eth0 -f "icmp or host 104.18.5.101" -w traceroute.pcapng
 Replace `eth0` if your interface differs; replace the host IP if your destination IP differs.
 
 How to find packets for the questions:
-- First request packet: look for the first UDP probe you sent (TTL=1). It will have src IP = your ilab host, dst IP = 104.18.5.101, protocol = UDP.
-- First router response: the matching ICMP Time Exceeded (Type 11, Code 0) coming back from hop 1 (in your run: `128.6.13.1`).
-- Destination response: the ICMP Destination Unreachable, Port Unreachable (Type 3, Code 3) from the destination IP (104.18.5.101) at the hop where you reached it (hop 12 in your sample).
-- Counting routers: count the distinct hops before the destination line in your traceroute output (you saw 11 routers; destination on hop 12).
-- TTL at destination: the hop number where the destination replied (12 in your sample).
+- First request packet: first UDP probe to the destination. In the new pcap: src IP = your ilab host (128.6.13.25), dst IP = 104.18.4.101, protocol = UDP, TTL = 1, sport ≈ 33616, dport ≈ 33435.
+- First router response: ICMP Time Exceeded (Type 11, Code 0) from hop 1 (128.6.13.1) back to you; outer IP protocol = 1; inner IP shows your original UDP probe to 104.18.4.101.
+- Destination response: ICMP Destination Unreachable, Port Unreachable (Type 3, Code 3) from 104.18.4.101 back to you (seen in the new pcap).
+- Counting routers: from the ICMP Time Exceeded sources before the first Port Unreachable, there are 14 routers; destination reply occurs next (effective hop ~15). If your traceroute text output shows fewer/more lines, use the text output, but the pcap shows 14 distinct routers then the destination.
+- TTL at destination: corresponds to the hop where the destination replied; based on the pcap, this is hop ~15.
 
 LaTeX Template for Part B Answers
 ---------------------------------
@@ -53,7 +53,7 @@ Copy the content below into a file named `report.tex` (or similar) and fill in t
 
 \section*{Part B: Wireshark Analysis}
 
-\textbf{Destination used:} www.princeton.edu (IP observed: 104.18.5.101)
+\textbf{Destination used:} www.princeton.edu (IP observed: 104.18.4.101)
 
 \begin{enumerate}
     \item \textbf{What is the value of the protocol field in the IP layer? Which protocol does it indicate? (Answer with reference to first request and response packet in your trace)}
@@ -70,19 +70,19 @@ Copy the content below into a file named `report.tex` (or similar) and fill in t
     
     \item \textbf{What is the value of the type field and code field in the ICMP packet received from the destination?}
     
-    \textit{Answer:} Not visible in the saved capture (no ICMP type 3 observed), but traceroute completion implies the expected ICMP Destination Unreachable, Code 3 (Port Unreachable) from 104.18.5.101 at the final hop.
+    \textit{Answer:} Type = 3 (Destination Unreachable), Code = 3 (Port Unreachable) from 104.18.4.101 (seen in the new pcap).
     
     \item \textbf{How many routers were present in the path to the destination?}
     
-    \textit{Answer:} 11 routers; destination reached on hop 12.
+    \textit{Answer:} About 14 routers before the destination; destination reply on the next hop (~15) per the pcap’s ICMP Time Exceeded sources followed by the Port Unreachable.
     
     \item \textbf{What is the TTL in the packet delivered to the destination?}
     
-    \textit{Answer:} 12 (the hop count when the destination replied).
+    \textit{Answer:} Approximately 15 (the hop count when the destination replied, based on the pcap).
     
     \item \textbf{How does source and destination IP in different layers of IP in ICMP packet relate to your machine (ilab), your destination machine and intermediate router?}
     
-    \textit{Answer:} For router Time Exceeded: outer IP src = router, dst = your host; inner (quoted) IP src = your host, dst = 104.18.5.101. For the expected destination Port Unreachable: outer IP src = 104.18.5.101, dst = your host; inner IP src = your host, dst = 104.18.5.101 (the original UDP probe).
+    \textit{Answer:} For router Time Exceeded: outer IP src = router (e.g., 128.6.13.1), dst = your host; inner (quoted) IP src = your host, dst = 104.18.4.101. For the destination Port Unreachable: outer IP src = 104.18.4.101, dst = your host; inner IP src = your host, dst = 104.18.4.101 (the original UDP probe).
     
 \end{enumerate}
 
