@@ -22,16 +22,16 @@ Capture steps (Wireshark GUI):
 
 Optional TShark (CLI) capture instead of GUI:
 ```
-sudo tshark -i eth0 -f "icmp or host 104.18.5.101" -w traceroute.pcapng
+sudo tshark -i eth0 -f "icmp or host 104.18.4.101" -w traceroute.pcapng
 ```
 Replace `eth0` if your interface differs; replace the host IP if your destination IP differs.
 
 How to find packets for the questions:
-- First request packet: first UDP probe to the destination. In the new pcap: src IP = your ilab host (128.6.13.25), dst IP = 104.18.4.101, protocol = UDP, TTL = 1, sport ≈ 33616, dport ≈ 33435.
+- First request packet: first UDP probe to the destination. In the new pcap: src IP = your ilab host (128.6.13.25), dst IP = 104.18.4.101, protocol = UDP, TTL = 1, sport ≈ 47568, dport ≈ 33435.
 - First router response: ICMP Time Exceeded (Type 11, Code 0) from hop 1 (128.6.13.1) back to you; outer IP protocol = 1; inner IP shows your original UDP probe to 104.18.4.101.
 - Destination response: ICMP Destination Unreachable, Port Unreachable (Type 3, Code 3) from 104.18.4.101 back to you (seen in the new pcap).
-- Counting routers: from the ICMP Time Exceeded sources before the first Port Unreachable, there are 14 routers; destination reply occurs next (effective hop ~15). If your traceroute text output shows fewer/more lines, use the text output, but the pcap shows 14 distinct routers then the destination.
-- TTL at destination: corresponds to the hop where the destination replied; based on the pcap, this is hop ~15.
+- Counting routers: from the ICMP Time Exceeded sources before the first Port Unreachable, there are 15 distinct routers; destination reply occurs next (effective hop ~16). If your traceroute text output shows fewer/more lines, use the text output, but the pcap shows 15 distinct routers then the destination.
+- TTL at destination: corresponds to the hop where the destination replied; based on the pcap, this is hop ~16.
 
 LaTeX Template for Part B Answers
 ---------------------------------
@@ -74,11 +74,11 @@ Copy the content below into a file named `report.tex` (or similar) and fill in t
     
     \item \textbf{How many routers were present in the path to the destination?}
     
-    \textit{Answer:} About 14 routers before the destination; destination reply on the next hop (~15) per the pcap’s ICMP Time Exceeded sources followed by the Port Unreachable.
+    \textit{Answer:} About 15 routers before the destination; destination reply on the next hop (~16) per the pcap’s ICMP Time Exceeded sources followed by the Port Unreachable.
     
     \item \textbf{What is the TTL in the packet delivered to the destination?}
     
-    \textit{Answer:} Approximately 15 (the hop count when the destination replied, based on the pcap).
+    \textit{Answer:} Approximately 16 (the hop count when the destination replied, based on the pcap).
     
     \item \textbf{How does source and destination IP in different layers of IP in ICMP packet relate to your machine (ilab), your destination machine and intermediate router?}
     
